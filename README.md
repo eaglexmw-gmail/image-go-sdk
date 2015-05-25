@@ -13,10 +13,31 @@ go sdk for picture cloud service of tencentyun.
 依赖信息
 ----------------------------------- 
 ###simplejson
-在使用sdk前，请确保已经安装simplejson
-安装方法如下
+在使用sdk前，请确保已经安装simplejson。安装方法如下
 		
 	go get github.com/bitly/go-simplejson
+
+数据结构
+----------------------------------- 
+###UrlInfo
+上传和复制api返回的图片资源链接信息
+		type UrlInfo struct {
+			Url          string
+			Download_url string
+			Fileid       string
+		}
+
+###PicInfo
+图片本身的属性信息，可以通过查询api获得
+		type PicInfo struct {
+			Url         string
+			Fileid      string
+			Upload_time uint
+			Size        uint
+			Md5         string
+			Width       uint
+			Height      uint
+		}
 
 How to start
 ----------------------------------- 
