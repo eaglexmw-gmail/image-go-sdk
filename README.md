@@ -50,11 +50,15 @@ How to start
 	SECRET_ID
 	SECRET_KEY
 
-### 2. 创建PicCloud对象
+### 2. 引入qlcoud包
+		
+	import "qcloud"
+
+### 3. 创建PicCloud对象
 		
 	cloud := qcloud.PicCloud{appid, sid, skey}
 
-### 3. 调用对应的方法
+### 4. 调用对应的方法
 上传
 		
 	pic_info, err := cloud.Stat(123456, fileid)
