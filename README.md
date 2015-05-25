@@ -23,22 +23,22 @@ go sdk for picture cloud service of tencentyun.
 上传和复制api返回的图片资源链接信息
 		
 		type UrlInfo struct {
-			Url          string
-			Download_url string
-			Fileid       string
+			Url          string	//图片的资源url
+			Download_url string	//图片的下载url
+			Fileid       string	//图片资源的唯一标识
 		}
 
 ###PicInfo
 图片本身的属性信息，可以通过查询api获得
 		
 		type PicInfo struct {
-			Url         string
-			Fileid      string
-			Upload_time uint
-			Size        uint
-			Md5         string
-			Width       uint
-			Height      uint
+			Url         string	//图片的资源url
+			Fileid      string	//图片资源的唯一标识
+			Upload_time uint	//图片的上传时间
+			Size        uint	//图片大小，单位字节
+			Md5         string	//图片的md5
+			Width       uint	//图片宽度
+			Height      uint	//图片高度
 		}
 
 How to start
