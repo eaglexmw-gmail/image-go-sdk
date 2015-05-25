@@ -1,0 +1,17 @@
+#!/usr/bin/env zsh
+
+CURDIR=`pwd`
+OLDGOPATH="$GOPATH"
+export GOPATH="$GOPATH:$CURDIR"
+
+#install
+gofmt -w src
+go install qcloud
+
+#build demo
+cd src
+go build demo.go
+cd ..
+
+export GOPATH="$OLDGOPATH"
+echo 'finished'
