@@ -14,7 +14,7 @@ go sdk for picture cloud service of tencentyun.
 ----------------------------------- 
 ###simplejson
 在使用sdk前，请确保已经安装simplejson
-安装方法
+安装方法如下
 		
 	go get github.com/bitly/go-simplejson
 
