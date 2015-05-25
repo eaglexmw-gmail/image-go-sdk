@@ -21,6 +21,7 @@ go sdk for picture cloud service of tencentyun.
 ----------------------------------- 
 ###UrlInfo
 上传和复制api返回的图片资源链接信息
+		
 		type UrlInfo struct {
 			Url          string
 			Download_url string
@@ -29,6 +30,7 @@ go sdk for picture cloud service of tencentyun.
 
 ###PicInfo
 图片本身的属性信息，可以通过查询api获得
+		
 		type PicInfo struct {
 			Url         string
 			Fileid      string
