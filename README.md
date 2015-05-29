@@ -6,16 +6,18 @@ go sdk for picture cloud service of tencentyun.
 
 版本信息
 ----------------------------------- 
+### v1.0.1
+调整github上的包结构
+调整代码规范
+
 ### v1.0.0
 稳定版本，支持图片云的基本api。
 包括图片的上传、下载、复制、查询和删除。
 
-依赖信息
+安装
 ----------------------------------- 
-###simplejson
-在使用sdk前，请确保已经安装simplejson。安装方法如下
 		
-	go get github.com/bitly/go-simplejson
+	go get github.com/tencentyun/go-sdk
 
 数据结构
 ----------------------------------- 
@@ -24,7 +26,7 @@ go sdk for picture cloud service of tencentyun.
 		
 		type UrlInfo struct {
 			Url          string	//图片的资源url
-			Download_url string	//图片的下载url
+			DownloadUrl  string	//图片的下载url
 			Fileid       string	//图片资源的唯一标识
 		}
 
@@ -34,7 +36,7 @@ go sdk for picture cloud service of tencentyun.
 		type PicInfo struct {
 			Url         string	//图片的资源url
 			Fileid      string	//图片资源的唯一标识
-			Upload_time uint	//图片的上传时间
+			UploadTime  uint	//图片的上传时间
 			Size        uint	//图片大小，单位字节
 			Md5         string	//图片的md5
 			Width       uint	//图片宽度
@@ -52,7 +54,7 @@ How to start
 
 ### 2. 引入qlcoud包
 		
-	import "qcloud"
+	import "github.com/tencentyun/go-sdk"
 
 ### 3. 创建PicCloud对象
 		
@@ -67,7 +69,7 @@ How to start
 	info, err := cloud.Copy(123456, fileid)
 查询
 		
-	pic_info, err = cloud.Stat(123456, fileid)
+	picInfo, err = cloud.Stat(123456, fileid)
 删除
 		
 	err = cloud.Delete(123456, fileid)
@@ -76,5 +78,5 @@ How to start
 	err = cloud.Download(123456, info2.Fileid, "./test2.jpg")
 
 ### demo示例
-请阅读src/demo.go示例
+请阅读test/demo.go示例
 	
