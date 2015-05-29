@@ -149,7 +149,7 @@ func (pc *PicCloud) Upload(userid uint, filename string) (info UrlInfo, err erro
 	}
 
 	info.Url, _ = js.Get("data").Get("url").String()
-	info.DownloadUrl, _ = js.Get("data").Get("downloadUrl").String()
+	info.DownloadUrl, _ = js.Get("data").Get("download_url").String()
 	info.Fileid, _ = js.Get("data").Get("fileid").String()
 	return
 }
@@ -288,7 +288,7 @@ func (pc *PicCloud) Copy(userid uint, fileid string) (info UrlInfo, err error) {
 	}
 
 	info.Url, _ = js.Get("data").Get("url").String()
-	info.DownloadUrl, _ = js.Get("data").Get("downloadUrl").String()
+	info.DownloadUrl, _ = js.Get("data").Get("download_url").String()
 	info.Fileid = info.Url[strings.LastIndex(info.Url, "/")+1:]
 	return
 }

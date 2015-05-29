@@ -12,13 +12,13 @@ import (
 	"testing"
 )
 
-const APPID = 200941
-const SECRET_ID = "AKIDh51wIFHJ13Mbc5AWd37z6WmQwIdTghBu"
-const SECRET_KEY = "SU4Qn0GoK0YRNS97p0l5rAsxwxcN6Il3"
+const APPID = 200943
+const SECRET_ID = "AKIDOXkiS878nYFvc4sggDRxTU56UsmN3LMy"
+const SECRET_KEY = "gMoR2lGvMWzxFGrxJCRoZMhU48f0tsdm"
 
 func TestUpload(t *testing.T) {
 	var userid uint = 123456
-	fileName := "test/test.jpg"
+	fileName := "./test/test.jpg"
 	cloud := PicCloud{APPID, SECRET_ID, SECRET_KEY}
 	info, err := cloud.Upload(userid, fileName)
 	if err != nil {
