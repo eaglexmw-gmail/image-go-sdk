@@ -1,11 +1,8 @@
 /**********************************************************************************************
  #
- # Author : solomonooo
- # Mail : hoshinight@gmail.com
- # Create time : 2015-05-25 11:05
- # Last modified : 2015-05-25 11:05
- # File name : piccloud_test.go
- # Description : unit test for picloud
+ # Github : github.com/tencentyun/go-sdk
+ # File name : picloud.go
+ # Description : unit test for tencent pic cloud sdk
  #
 **********************************************************************************************/
 package qcloud
@@ -21,17 +18,17 @@ const SECRET_KEY = "SU4Qn0GoK0YRNS97p0l5rAsxwxcN6Il3"
 
 func TestUpload(t *testing.T) {
 	var userid uint = 123456
-	filename := "../test.jpg"
+	fileName := "test/test.jpg"
 	cloud := PicCloud{APPID, SECRET_ID, SECRET_KEY}
-	info, err := cloud.Upload(userid, filename)
+	info, err := cloud.Upload(userid, fileName)
 	if err != nil {
-		t.Errorf("pic upload failed, userid=%d, pic=%s, err=%s\n", userid, filename, err.Error())
+		t.Errorf("pic upload failed, userid=%d, pic=%s, err=%s\n", userid, fileName, err.Error())
 	} else {
 		fmt.Printf("pic upload success\n")
 		info.Print()
 	}
 
-	if info.Url == "" || info.Download_url == "" || info.Fileid == "" {
+	if info.Url == "" || info.DownloadUrl == "" || info.Fileid == "" {
 		t.Errorf("pic info error\n")
 	}
 }

@@ -28,12 +28,12 @@ func main() {
 	}
 
 	fmt.Println("******************")
-	pic_info, err := cloud.Stat(123456, info.Fileid)
+	picInfo, err := cloud.Stat(123456, info.Fileid)
 	if err != nil {
 		fmt.Printf("pic stat failed, err = %s\n", err.Error())
 	} else {
 		fmt.Println("pic stat success")
-		pic_info.Print()
+		picInfo.Print()
 	}
 
 	fmt.Println("=========================================")
@@ -46,12 +46,12 @@ func main() {
 	}
 
 	fmt.Println("******************")
-	pic_info, err = cloud.Stat(123456, info2.Fileid)
+	picInfo, err = cloud.Stat(123456, info2.Fileid)
 	if err != nil {
 		fmt.Printf("copy pic stat failed, err = %s\n", err.Error())
 	} else {
 		fmt.Println("copy pic stat success")
-		pic_info.Print()
+		picInfo.Print()
 	}
 
 	fmt.Println("=========================================")

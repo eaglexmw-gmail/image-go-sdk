@@ -19,14 +19,14 @@ import (
 	"time"
 )
 
-type pic_url_field struct {
+type picUrlField struct {
 	domain string
 	appid  uint
 	userid uint
 	fileid string
 }
 
-func parse_pic_url(url string) (fields pic_url_field, e error) {
+func parsePicUrl(url string) (fields picUrlField, e error) {
 	params := strings.Split(strings.TrimPrefix(url, "http://"), "/")
 	if len(params) < 4 {
 		desc := fmt.Sprintf("url format error, url=%s", url)
@@ -44,14 +44,14 @@ func parse_pic_url(url string) (fields pic_url_field, e error) {
 	return
 }
 
-func app_sign(appid uint, secret_id string, secret_key string, expire uint, userid uint, url string) (string, error) {
-	if "" == secret_id || "" == secret_key {
+func SignBase(appid uint, secretId string, secretKey string, expire uint, userid uint, url string) (string, error) {
+	if "" == secretId || "" == secretKey {
 		return "", errors.New("invalid params, secret id or key is empty")
 	}
 
 	var fileid string
 	if "" != url {
-		fields, err := parse_pic_url(url)
+		fields, err := parsePicUrl(url)
 		if nil != err {
 			return "", err
 		}
@@ -62,33 +62,33 @@ func app_sign(appid uint, secret_id string, secret_key string, expire uint, user
 	now := time.Now().Unix()
 	r := rand.New(rand.NewSource(time.Now().Unix()))
 	rdm := r.Int31()
-	expire_time := expire
-	if 0 != expire_time {
-		expire_time += uint(now)
+	expireTime := expire
+	if 0 != expireTime {
+		expireTime += uint(now)
 	}
 
-	plain_str := fmt.Sprintf("a=%d&k=%s&e=%d&t=%d&r=%d&u=%d&f=%s",
+	plainStr := fmt.Sprintf("a=%d&k=%s&e=%d&t=%d&r=%d&u=%d&f=%s",
 		appid,
-		secret_id,
-		expire_time,
+		secretId,
+		expireTime,
 		now,
 		rdm,
 		userid,
 		fileid)
 
-	crypto_str := []byte(plain_str)
-	h := hmac.New(sha1.New, []byte(secret_key))
-	h.Write(crypto_str)
-	hmac_str := h.Sum(nil)
-	crypto_str = append(hmac_str, crypto_str...)
-	sign := base64.StdEncoding.EncodeToString(crypto_str)
+	cryptoStr := []byte(plainStr)
+	h := hmac.New(sha1.New, []byte(secretKey))
+	h.Write(cryptoStr)
+	hmacStr := h.Sum(nil)
+	cryptoStr = append(hmacStr, cryptoStr...)
+	sign := base64.StdEncoding.EncodeToString(cryptoStr)
 	return sign, nil
 }
 
-func Qc_app_sign(appid uint, secret_id string, secret_key string, expire uint, userid uint) (string, error) {
-	return app_sign(appid, secret_id, secret_key, expire, userid, "")
+func AppSign(appid uint, secretId string, secretKey string, expire uint, userid uint) (string, error) {
+	return SignBase(appid, secretId, secretKey, expire, userid, "")
 }
 
-func Qc_app_sign_once(appid uint, secret_id string, secret_key string, userid uint, url string) (string, error) {
-	return app_sign(appid, secret_id, secret_key, 0, userid, url)
+func AppSignOnce(appid uint, secretId string, secretKey string, userid uint, url string) (string, error) {
+	return SignBase(appid, secretId, secretKey, 0, userid, url)
 }

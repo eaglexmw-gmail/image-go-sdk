@@ -1,11 +1,8 @@
 /**********************************************************************************************
  #
- # Author : solomonooo
- # Mail : hoshinight@gmail.com
- # Create time : 2015-05-25 11:05
- # Last modified : 2015-05-25 11:05
- # File name : piccloud.go
- # Description : qcloud sdk for go
+ # Github : github.com/tencentyun/go-sdk
+ # File name : picloud.go
+ # Description : tencent pic cloud sdk for go
  #
 **********************************************************************************************/
 package qcloud
@@ -23,7 +20,7 @@ import (
 	"strings"
 
 	"github.com/bitly/go-simplejson"
-	"github.com/solomonooo/go-sdk/sign"
+	"github.com/tencentyun/go-sdk/sign"
 )
 
 const QCLOUD_DOMAIN = "web.image.myqcloud.com/photos/v1"
@@ -31,20 +28,20 @@ const QCLOUD_DOWNLOAD_DOMAIN = "image.myqcloud.com"
 
 type PicCloud struct {
 	Appid      uint
-	Secret_id  string
-	Secret_key string
+	SecretId  string
+	SecretKey string
 }
 
 type UrlInfo struct {
 	Url          string
-	Download_url string
+	DownloadUrl string
 	Fileid       string
 }
 
 type PicInfo struct {
 	Url         string
 	Fileid      string
-	Upload_time uint
+	UploadTime uint
 	Size        uint
 	Md5         string
 	Width       uint
@@ -52,20 +49,20 @@ type PicInfo struct {
 }
 
 func String2Uint(s string) uint {
-	tmp_int, _ := strconv.Atoi(s)
-	return uint(tmp_int)
+	tmpInt, _ := strconv.Atoi(s)
+	return uint(tmpInt)
 }
 
 func (ui *UrlInfo) Print() {
 	fmt.Printf("url = %s\n", ui.Url)
 	fmt.Printf("fileid = %s\n", ui.Fileid)
-	fmt.Printf("download url = %s\n", ui.Download_url)
+	fmt.Printf("download url = %s\n", ui.DownloadUrl)
 }
 
 func (pi *PicInfo) Print() {
 	fmt.Printf("url = %s\n", pi.Url)
 	fmt.Printf("fileid = %s\n", pi.Fileid)
-	fmt.Printf("upload time = %d\n", pi.Upload_time)
+	fmt.Printf("upload time = %d\n", pi.UploadTime)
 	fmt.Printf("size = %d\n", pi.Size)
 	fmt.Printf("md5 = %s\n", pi.Md5)
 	fmt.Printf("width = %d\n", pi.Width)
@@ -94,11 +91,11 @@ func (pc *PicCloud) Upload(userid uint, filename string) (info UrlInfo, err erro
 		return
 	}
 
-	req_url := fmt.Sprintf("http://%s/%d/%d", QCLOUD_DOMAIN, pc.Appid, userid)
+	reqUrl := fmt.Sprintf("http://%s/%d/%d", QCLOUD_DOMAIN, pc.Appid, userid)
 	boundary := "-------------------------abcdefg1234567"
 	expire := uint(3600)
 
-	sign, err := sign.Qc_app_sign(pc.Appid, pc.Secret_id, pc.Secret_key, expire, userid)
+	sign, err := sign.AppSign(pc.Appid, pc.SecretId, pc.SecretKey, expire, userid)
 	if nil != err {
 		return
 	}
@@ -120,7 +117,7 @@ func (pc *PicCloud) Upload(userid uint, filename string) (info UrlInfo, err erro
 	}
 	bodyWriter.Close()
 
-	req, err := http.NewRequest("POST", req_url, bodyBuf)
+	req, err := http.NewRequest("POST", reqUrl, bodyBuf)
 	if nil != err {
 		return
 	}
@@ -152,25 +149,25 @@ func (pc *PicCloud) Upload(userid uint, filename string) (info UrlInfo, err erro
 	}
 
 	info.Url, _ = js.Get("data").Get("url").String()
-	info.Download_url, _ = js.Get("data").Get("download_url").String()
+	info.DownloadUrl, _ = js.Get("data").Get("downloadUrl").String()
 	info.Fileid, _ = js.Get("data").Get("fileid").String()
 	return
 }
 
 func (pc *PicCloud) Download(userid uint, fileid string, filename string) error {
-	req_url := fmt.Sprintf("http://%d.%s/%d/%d/%s/original", pc.Appid, QCLOUD_DOWNLOAD_DOMAIN, pc.Appid, userid, fileid)
-	return pc.DownloadByUrl(req_url, filename)
+	reqUrl := fmt.Sprintf("http://%d.%s/%d/%d/%s/original", pc.Appid, QCLOUD_DOWNLOAD_DOMAIN, pc.Appid, userid, fileid)
+	return pc.DownloadByUrl(reqUrl, filename)
 }
 
 func (pc *PicCloud) DownloadWithSign(userid uint, fileid string, filename string) error {
 
-	req_url := fmt.Sprintf("http://%d.%s/%d/%d/%s/original", pc.Appid, QCLOUD_DOWNLOAD_DOMAIN, pc.Appid, userid, fileid)
-	sign, err := sign.Qc_app_sign_once(pc.Appid, pc.Secret_id, pc.Secret_key, userid, req_url)
+	reqUrl := fmt.Sprintf("http://%d.%s/%d/%d/%s/original", pc.Appid, QCLOUD_DOWNLOAD_DOMAIN, pc.Appid, userid, fileid)
+	sign, err := sign.AppSignOnce(pc.Appid, pc.SecretId, pc.SecretKey, userid, reqUrl)
 	if nil != err {
 		return err
 	}
 
-	return pc.DownloadByUrl(req_url+"?sign="+sign, filename)
+	return pc.DownloadByUrl(reqUrl+"?sign="+sign, filename)
 }
 
 func (pc *PicCloud) DownloadByUrl(url string, filename string) error {
@@ -206,9 +203,9 @@ func (pc *PicCloud) DownloadByUrl(url string, filename string) error {
 }
 
 func (pc *PicCloud) Stat(userid uint, fileid string) (info PicInfo, err error) {
-	req_url := fmt.Sprintf("http://%s/%d/%d/%s", QCLOUD_DOMAIN, pc.Appid, userid, fileid)
+	reqUrl := fmt.Sprintf("http://%s/%d/%d/%s", QCLOUD_DOMAIN, pc.Appid, userid, fileid)
 
-	req, err := http.NewRequest("GET", req_url, nil)
+	req, err := http.NewRequest("GET", reqUrl, nil)
 	if nil != err {
 		return
 	}
@@ -241,7 +238,7 @@ func (pc *PicCloud) Stat(userid uint, fileid string) (info PicInfo, err error) {
 	info.Url, _ = js.Get("data").Get("file_url").String()
 	info.Fileid, _ = js.Get("data").Get("file_fileid").String()
 	tmp, _ = js.Get("data").Get("file_upload_time").String()
-	info.Upload_time = String2Uint(tmp)
+	info.UploadTime = String2Uint(tmp)
 	tmp, _ = js.Get("data").Get("file_size").String()
 	info.Size = String2Uint(tmp)
 	info.Md5, _ = js.Get("data").Get("file_md5").String()
@@ -253,14 +250,14 @@ func (pc *PicCloud) Stat(userid uint, fileid string) (info PicInfo, err error) {
 }
 
 func (pc *PicCloud) Copy(userid uint, fileid string) (info UrlInfo, err error) {
-	req_url := fmt.Sprintf("http://%s/%d/%d/%s/copy", QCLOUD_DOMAIN, pc.Appid, userid, fileid)
-	download_url := fmt.Sprintf("http://%d.%s/%d/%d/%s/original", pc.Appid, QCLOUD_DOWNLOAD_DOMAIN, pc.Appid, userid, fileid)
-	sign, err := sign.Qc_app_sign_once(pc.Appid, pc.Secret_id, pc.Secret_key, userid, download_url)
+	reqUrl := fmt.Sprintf("http://%s/%d/%d/%s/copy", QCLOUD_DOMAIN, pc.Appid, userid, fileid)
+	downloadUrl := fmt.Sprintf("http://%d.%s/%d/%d/%s/original", pc.Appid, QCLOUD_DOWNLOAD_DOMAIN, pc.Appid, userid, fileid)
+	sign, err := sign.AppSignOnce(pc.Appid, pc.SecretId, pc.SecretKey, userid, downloadUrl)
 	if nil != err {
 		return
 	}
 
-	req, err := http.NewRequest("POST", req_url, nil)
+	req, err := http.NewRequest("POST", reqUrl, nil)
 	if nil != err {
 		return
 	}
@@ -291,20 +288,20 @@ func (pc *PicCloud) Copy(userid uint, fileid string) (info UrlInfo, err error) {
 	}
 
 	info.Url, _ = js.Get("data").Get("url").String()
-	info.Download_url, _ = js.Get("data").Get("download_url").String()
+	info.DownloadUrl, _ = js.Get("data").Get("downloadUrl").String()
 	info.Fileid = info.Url[strings.LastIndex(info.Url, "/")+1:]
 	return
 }
 
 func (pc *PicCloud) Delete(userid uint, fileid string) error {
-	req_url := fmt.Sprintf("http://%s/%d/%d/%s/del", QCLOUD_DOMAIN, pc.Appid, userid, fileid)
-	download_url := fmt.Sprintf("http://%d.%s/%d/%d/%s/original", pc.Appid, QCLOUD_DOWNLOAD_DOMAIN, pc.Appid, userid, fileid)
-	sign, err := sign.Qc_app_sign_once(pc.Appid, pc.Secret_id, pc.Secret_key, userid, download_url)
+	reqUrl := fmt.Sprintf("http://%s/%d/%d/%s/del", QCLOUD_DOMAIN, pc.Appid, userid, fileid)
+	downloadUrl := fmt.Sprintf("http://%d.%s/%d/%d/%s/original", pc.Appid, QCLOUD_DOWNLOAD_DOMAIN, pc.Appid, userid, fileid)
+	sign, err := sign.AppSignOnce(pc.Appid, pc.SecretId, pc.SecretKey, userid, downloadUrl)
 	if nil != err {
 		return err
 	}
 
-	req, err := http.NewRequest("POST", req_url, nil)
+	req, err := http.NewRequest("POST", reqUrl, nil)
 	if nil != err {
 		return err
 	}
