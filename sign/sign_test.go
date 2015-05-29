@@ -1,11 +1,8 @@
 /**********************************************************************************************
  #
- # Author : solomonooo
- # Mail : hoshinight@gmail.com
- # Create time : 2015-05-25 11:05
- # Last modified : 2015-05-25 11:05
+ # Github : github.com/tencentyun/go-sdk
  # File name : sign_test.go
- # Description : unit test for sign 
+ # Description : unit test for qcloud sign
  #
 **********************************************************************************************/
 package sign

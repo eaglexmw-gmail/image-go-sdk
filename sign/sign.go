@@ -1,11 +1,8 @@
 /**********************************************************************************************
  #
- # Author : solomonooo
- # Mail : hoshinight@gmail.com
- # Create time : 2015-05-25 11:05
- # Last modified : 2015-05-25 11:05
+ # Github : github.com/tencentyun/go-sdk
  # File name : sign.go
- # Description : qcloud sign 
+ # Description : qcloud sign
  #
 **********************************************************************************************/
 package sign

@@ -23,7 +23,7 @@ import (
 	"strings"
 
 	"github.com/bitly/go-simplejson"
-	"qcloud/sign"
+	"github.com/solomonooo/go-sdk/sign"
 )
 
 const QCLOUD_DOMAIN = "web.image.myqcloud.com/photos/v1"
