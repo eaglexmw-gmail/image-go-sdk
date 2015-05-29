@@ -8,14 +8,14 @@
 package main
 
 import (
-	"./qcloud"
 	"fmt"
+	"github.com/tencentyun/go-sdk"
 )
 
 func main() {
-	var appid uint = 200941
-	sid := "AKIDh51wIFHJ13Mbc5AWd37z6WmQwIdTghBu"
-	skey := "SU4Qn0GoK0YRNS97p0l5rAsxwxcN6Il3"
+	var appid uint = 200943
+	sid := "AKIDOXkiS878nYFvc4sggDRxTU56UsmN3LMy"
+	skey := "gMoR2lGvMWzxFGrxJCRoZMhU48f0tsdm"
 
 	cloud := qcloud.PicCloud{appid, sid, skey}
 	fmt.Println("=========================================")
