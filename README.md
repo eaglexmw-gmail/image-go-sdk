@@ -6,6 +6,10 @@ go sdk for picture cloud service of tencentyun.
 
 版本信息
 ----------------------------------- 
+### v1.1.0
+new features:
+增加本地签名生成和校验的函数
+
 ### v1.0.1
 调整github上的包结构
 调整代码规范

@@ -12,6 +12,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"time"
 	"io/ioutil"
 	"mime/multipart"
 	"net/http"
@@ -23,6 +24,7 @@ import (
 	"github.com/tencentyun/go-sdk/sign"
 )
 
+const QCLOUD_VERSION = "1.1.0"
 const QCLOUD_DOMAIN = "web.image.myqcloud.com/photos/v1"
 const QCLOUD_DOWNLOAD_DOMAIN = "image.myqcloud.com"
 
@@ -57,6 +59,10 @@ func (ui *UrlInfo) Print() {
 	fmt.Printf("url = %s\n", ui.Url)
 	fmt.Printf("fileid = %s\n", ui.Fileid)
 	fmt.Printf("download url = %s\n", ui.DownloadUrl)
+}
+
+func (pi *PicInfo) Version() string {
+	return QCLOUD_VERSION
 }
 
 func (pi *PicInfo) Print() {
@@ -328,6 +334,50 @@ func (pc *PicCloud) Delete(userid uint, fileid string) error {
 	if code != 0 {
 		desc := fmt.Sprintf("rsp error, code=%d, message=%s", code, message)
 		return errors.New(desc)
+	}
+
+	return nil
+}
+
+func (pc *PicCloud) Sign(userid uint, expire uint) (string, error) {
+	return sign.AppSign(pc.Appid, pc.SecretId, pc.SecretKey, expire, userid)
+}
+
+func (pc *PicCloud) SignOnceWithUrl(userid uint, downloadUrl string) (string, error) {
+	return sign.AppSignOnce(pc.Appid, pc.SecretId, pc.SecretKey, userid, downloadUrl)
+}
+
+func (pc *PicCloud) SignOnce(userid uint, fileid string) (string, error) {
+	downloadUrl := fmt.Sprintf("http://%d.%s/%d/%d/%s/original", pc.Appid, QCLOUD_DOWNLOAD_DOMAIN, pc.Appid, userid, fileid)
+	return pc.SignOnceWithUrl(userid, downloadUrl)
+}
+
+func (pc *PicCloud) CheckSign(userid uint, picSign string, fileid string) error {
+	if "" == picSign {
+		return errors.New("empty sign")
+	}
+	
+	uid, expire, fid, err := sign.Decode(picSign, pc.Appid, pc.SecretId, pc.SecretKey)
+	if nil != err {
+		return err
+	}else if uid != userid {
+		desc := fmt.Sprintf("userid conflict, userid=%d, userid in sign=%d", userid, uid)
+		return errors.New(desc)
+	}
+	//check time
+	if expire != 0 {
+		//
+		now := uint(time.Now().Unix())
+		if expire <= now {
+			desc := fmt.Sprintf("sign expire, expire time=%d, now=%d", expire, now)
+			return errors.New(desc)
+		}
+	}else{
+		//check file id
+		if fileid != fid {
+			desc := fmt.Sprintf("sign fileid conflict, fileid=%s, fileid in sign=%s", fileid, fid)
+			return errors.New(desc)
+		}
 	}
 
 	return nil
