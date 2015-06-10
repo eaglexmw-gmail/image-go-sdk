@@ -91,13 +91,13 @@ func (pc *PicCloud) parseRsp(rsp []byte) (code int, message string, js *simplejs
 	return
 }
 
-func (pc *PicCloud) Upload(userid uint, filename string) (info UrlInfo, err error) {
+func (pc *PicCloud) Upload(userid string, filename string) (info UrlInfo, err error) {
 	if "" == filename {
 		err = errors.New("invliad filename")
 		return
 	}
 
-	reqUrl := fmt.Sprintf("http://%s/%d/%d", QCLOUD_DOMAIN, pc.Appid, userid)
+	reqUrl := fmt.Sprintf("http://%s/%d/%s", QCLOUD_DOMAIN, pc.Appid, userid)
 	boundary := "-------------------------abcdefg1234567"
 	expire := uint(3600)
 
@@ -160,14 +160,14 @@ func (pc *PicCloud) Upload(userid uint, filename string) (info UrlInfo, err erro
 	return
 }
 
-func (pc *PicCloud) Download(userid uint, fileid string, filename string) error {
-	reqUrl := fmt.Sprintf("http://%d.%s/%d/%d/%s/original", pc.Appid, QCLOUD_DOWNLOAD_DOMAIN, pc.Appid, userid, fileid)
+func (pc *PicCloud) Download(userid string, fileid string, filename string) error {
+	reqUrl := fmt.Sprintf("http://%d.%s/%d/%s/%s/original", pc.Appid, QCLOUD_DOWNLOAD_DOMAIN, pc.Appid, userid, fileid)
 	return pc.DownloadByUrl(reqUrl, filename)
 }
 
-func (pc *PicCloud) DownloadWithSign(userid uint, fileid string, filename string) error {
+func (pc *PicCloud) DownloadWithSign(userid string, fileid string, filename string) error {
 
-	reqUrl := fmt.Sprintf("http://%d.%s/%d/%d/%s/original", pc.Appid, QCLOUD_DOWNLOAD_DOMAIN, pc.Appid, userid, fileid)
+	reqUrl := fmt.Sprintf("http://%d.%s/%d/%s/%s/original", pc.Appid, QCLOUD_DOWNLOAD_DOMAIN, pc.Appid, userid, fileid)
 	sign, err := sign.AppSignOnce(pc.Appid, pc.SecretId, pc.SecretKey, userid, reqUrl)
 	if nil != err {
 		return err
@@ -208,8 +208,8 @@ func (pc *PicCloud) DownloadByUrl(url string, filename string) error {
 	return nil
 }
 
-func (pc *PicCloud) Stat(userid uint, fileid string) (info PicInfo, err error) {
-	reqUrl := fmt.Sprintf("http://%s/%d/%d/%s", QCLOUD_DOMAIN, pc.Appid, userid, fileid)
+func (pc *PicCloud) Stat(userid string, fileid string) (info PicInfo, err error) {
+	reqUrl := fmt.Sprintf("http://%s/%d/%s/%s", QCLOUD_DOMAIN, pc.Appid, userid, fileid)
 
 	req, err := http.NewRequest("GET", reqUrl, nil)
 	if nil != err {
@@ -255,9 +255,9 @@ func (pc *PicCloud) Stat(userid uint, fileid string) (info PicInfo, err error) {
 	return
 }
 
-func (pc *PicCloud) Copy(userid uint, fileid string) (info UrlInfo, err error) {
-	reqUrl := fmt.Sprintf("http://%s/%d/%d/%s/copy", QCLOUD_DOMAIN, pc.Appid, userid, fileid)
-	downloadUrl := fmt.Sprintf("http://%d.%s/%d/%d/%s/original", pc.Appid, QCLOUD_DOWNLOAD_DOMAIN, pc.Appid, userid, fileid)
+func (pc *PicCloud) Copy(userid string, fileid string) (info UrlInfo, err error) {
+	reqUrl := fmt.Sprintf("http://%s/%d/%s/%s/copy", QCLOUD_DOMAIN, pc.Appid, userid, fileid)
+	downloadUrl := fmt.Sprintf("http://%d.%s/%d/%s/%s/original", pc.Appid, QCLOUD_DOWNLOAD_DOMAIN, pc.Appid, userid, fileid)
 	sign, err := sign.AppSignOnce(pc.Appid, pc.SecretId, pc.SecretKey, userid, downloadUrl)
 	if nil != err {
 		return
@@ -299,9 +299,9 @@ func (pc *PicCloud) Copy(userid uint, fileid string) (info UrlInfo, err error) {
 	return
 }
 
-func (pc *PicCloud) Delete(userid uint, fileid string) error {
-	reqUrl := fmt.Sprintf("http://%s/%d/%d/%s/del", QCLOUD_DOMAIN, pc.Appid, userid, fileid)
-	downloadUrl := fmt.Sprintf("http://%d.%s/%d/%d/%s/original", pc.Appid, QCLOUD_DOWNLOAD_DOMAIN, pc.Appid, userid, fileid)
+func (pc *PicCloud) Delete(userid string, fileid string) error {
+	reqUrl := fmt.Sprintf("http://%s/%d/%s/%s/del", QCLOUD_DOMAIN, pc.Appid, userid, fileid)
+	downloadUrl := fmt.Sprintf("http://%d.%s/%d/%s/%s/original", pc.Appid, QCLOUD_DOWNLOAD_DOMAIN, pc.Appid, userid, fileid)
 	sign, err := sign.AppSignOnce(pc.Appid, pc.SecretId, pc.SecretKey, userid, downloadUrl)
 	if nil != err {
 		return err
@@ -339,20 +339,20 @@ func (pc *PicCloud) Delete(userid uint, fileid string) error {
 	return nil
 }
 
-func (pc *PicCloud) Sign(userid uint, expire uint) (string, error) {
+func (pc *PicCloud) Sign(userid string, expire uint) (string, error) {
 	return sign.AppSign(pc.Appid, pc.SecretId, pc.SecretKey, expire, userid)
 }
 
-func (pc *PicCloud) SignOnceWithUrl(userid uint, downloadUrl string) (string, error) {
+func (pc *PicCloud) SignOnceWithUrl(userid string, downloadUrl string) (string, error) {
 	return sign.AppSignOnce(pc.Appid, pc.SecretId, pc.SecretKey, userid, downloadUrl)
 }
 
-func (pc *PicCloud) SignOnce(userid uint, fileid string) (string, error) {
-	downloadUrl := fmt.Sprintf("http://%d.%s/%d/%d/%s/original", pc.Appid, QCLOUD_DOWNLOAD_DOMAIN, pc.Appid, userid, fileid)
+func (pc *PicCloud) SignOnce(userid string, fileid string) (string, error) {
+	downloadUrl := fmt.Sprintf("http://%d.%s/%d/%s/%s/original", pc.Appid, QCLOUD_DOWNLOAD_DOMAIN, pc.Appid, userid, fileid)
 	return pc.SignOnceWithUrl(userid, downloadUrl)
 }
 
-func (pc *PicCloud) CheckSign(userid uint, picSign string, fileid string) error {
+func (pc *PicCloud) CheckSign(userid string, picSign string, fileid string) error {
 	if "" == picSign {
 		return errors.New("empty sign")
 	}
@@ -361,7 +361,7 @@ func (pc *PicCloud) CheckSign(userid uint, picSign string, fileid string) error 
 	if nil != err {
 		return err
 	}else if uid != userid {
-		desc := fmt.Sprintf("userid conflict, userid=%d, userid in sign=%d", userid, uid)
+		desc := fmt.Sprintf("userid conflict, userid=%s, userid in sign=%s", userid, uid)
 		return errors.New(desc)
 	}
 	//check time

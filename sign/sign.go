@@ -46,7 +46,7 @@ func parsePicUrl(url string) (fields picUrlField, e error) {
 	return
 }
 
-func SignBase(appid uint, secretId string, secretKey string, expire uint, userid uint, url string) (string, error) {
+func SignBase(appid uint, secretId string, secretKey string, expire uint, userid string, url string) (string, error) {
 	if "" == secretId || "" == secretKey {
 		return "", errors.New("invalid params, secret id or key is empty")
 	}
@@ -69,7 +69,7 @@ func SignBase(appid uint, secretId string, secretKey string, expire uint, userid
 		expireTime += uint(now)
 	}
 
-	plainStr := fmt.Sprintf("a=%d&k=%s&e=%d&t=%d&r=%d&u=%d&f=%s",
+	plainStr := fmt.Sprintf("a=%d&k=%s&e=%d&t=%d&r=%d&u=%s&f=%s",
 		appid,
 		secretId,
 		expireTime,
@@ -87,15 +87,15 @@ func SignBase(appid uint, secretId string, secretKey string, expire uint, userid
 	return sign, nil
 }
 
-func AppSign(appid uint, secretId string, secretKey string, expire uint, userid uint) (string, error) {
+func AppSign(appid uint, secretId string, secretKey string, expire uint, userid string) (string, error) {
 	return SignBase(appid, secretId, secretKey, expire, userid, "")
 }
 
-func AppSignOnce(appid uint, secretId string, secretKey string, userid uint, url string) (string, error) {
+func AppSignOnce(appid uint, secretId string, secretKey string, userid string, url string) (string, error) {
 	return SignBase(appid, secretId, secretKey, 0, userid, url)
 }
 
-func Decode(sign string, appid uint, secretId string, secretKey string) (userid uint, expire uint, fileid string, e error) {
+func Decode(sign string, appid uint, secretId string, secretKey string) (userid string, expire uint, fileid string, e error) {
 	if "" == sign {
 		e = errors.New("invalid sign string")
 		return 
@@ -153,11 +153,7 @@ func Decode(sign string, appid uint, secretId string, secretKey string) (userid 
 	}
 	expire = uint(tmp)
 	//check userid
-	tmp, e = strconv.Atoi(strings.TrimLeft(fields[5], "u="))
-	if nil != e {
-		return
-	}
-	userid = uint(tmp)
+	userid = strings.TrimLeft(fields[5], "u=")
 	//check fileid
 	fileid = strings.TrimLeft(fields[6], "f=")
 	/////
