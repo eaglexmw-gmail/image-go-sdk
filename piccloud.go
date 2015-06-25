@@ -76,6 +76,7 @@ func (pi *PicInfo) Print() {
 }
 
 func (pc *PicCloud) parseRsp(rsp []byte) (code int, message string, js *simplejson.Json, err error) {
+	fmt.Printf("http rsp : %s\r\n", string(rsp))
 	js, err = simplejson.NewJson(rsp)
 	if nil != err {
 		return
@@ -100,6 +101,8 @@ func (pc *PicCloud) Upload(userid string, filename string) (info UrlInfo, err er
 	reqUrl := fmt.Sprintf("http://%s/%d/%s", QCLOUD_DOMAIN, pc.Appid, userid)
 	boundary := "-------------------------abcdefg1234567"
 	expire := uint(3600)
+
+	reqUrl += "?analyze=fuzzy.food"
 
 	sign, err := sign.AppSign(pc.Appid, pc.SecretId, pc.SecretKey, expire, userid)
 	if nil != err {
@@ -134,10 +137,11 @@ func (pc *PicCloud) Upload(userid string, filename string) (info UrlInfo, err er
 
 	var client http.Client
 	resp, err := client.Do(req)
-	defer resp.Body.Close()
 	if nil != err {
+		fmt.Printf("http error, err=%s", err.Error())
 		return
 	}
+	defer resp.Body.Close()
 
 	data, err := ioutil.ReadAll(resp.Body)
 	if nil != err {

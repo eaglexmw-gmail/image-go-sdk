@@ -14,7 +14,7 @@ import (
 
 func main() {
 	pic_test()
-	video_test()	
+	//video_test()	
 }
 
 func pic_test(){
@@ -32,6 +32,7 @@ func pic_test(){
 		info.Print()
 	}
 
+	/*
 	fmt.Println("******************")
 	picInfo, err := cloud.Stat("123456", info.Fileid)
 	if err != nil {
@@ -81,6 +82,7 @@ func pic_test(){
 	} else {
 		fmt.Println("copy pic delete success")
 	}
+	*/
 }
 
 func video_test(){
