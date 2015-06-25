@@ -1,10 +1,8 @@
-/**********************************************************************************************
- #
- # Github : github.com/tencentyun/go-sdk
- # File name : sign.go
- # Description : qcloud sign
- #
-**********************************************************************************************/
+// copyright : tencent
+// author : solomonooo
+// github : github.com/tencentyun/go-sdk
+
+// Package sign implements sign for qcloud sdk
 package sign
 
 import (
@@ -21,46 +19,11 @@ import (
 
 const HMAC_LENGTH = 20
 
-type picUrlField struct {
-	domain string
-	appid  uint
-	userid uint
-	fileid string
-}
-
-func parsePicUrl(url string) (fields picUrlField, e error) {
-	params := strings.Split(strings.TrimPrefix(url, "http://"), "/")
-	if len(params) < 4 {
-		desc := fmt.Sprintf("url format error, url=%s", url)
-		e = errors.New(desc)
-		return
-	}
-	fields.domain = params[0]
-	var value int
-	value, _ = strconv.Atoi(params[1])
-	fields.appid = uint(value)
-	value, _ = strconv.Atoi(params[2])
-	fields.userid = uint(value)
-	fields.fileid = params[3]
-	e = nil
-	return
-}
-
-func SignBase(appid uint, secretId string, secretKey string, expire uint, userid string, url string) (string, error) {
+func SignBase(appid uint, secretId string, secretKey string, expire uint, userid string, fileid string) (string, error) {
 	if "" == secretId || "" == secretKey {
 		return "", errors.New("invalid params, secret id or key is empty")
 	}
-
-	var fileid string
-	if "" != url {
-		fields, err := parsePicUrl(url)
-		if nil != err {
-			return "", err
-		}
-
-		fileid = fields.fileid
-	}
-
+	
 	now := time.Now().Unix()
 	r := rand.New(rand.NewSource(time.Now().Unix()))
 	rdm := r.Int31()
@@ -78,6 +41,8 @@ func SignBase(appid uint, secretId string, secretKey string, expire uint, userid
 		userid,
 		fileid)
 
+	fmt.Println("sign=", plainStr)
+
 	cryptoStr := []byte(plainStr)
 	h := hmac.New(sha1.New, []byte(secretKey))
 	h.Write(cryptoStr)
@@ -87,14 +52,17 @@ func SignBase(appid uint, secretId string, secretKey string, expire uint, userid
 	return sign, nil
 }
 
+// gen the sign with a expire time.
 func AppSign(appid uint, secretId string, secretKey string, expire uint, userid string) (string, error) {
 	return SignBase(appid, secretId, secretKey, expire, userid, "")
 }
 
-func AppSignOnce(appid uint, secretId string, secretKey string, userid string, url string) (string, error) {
-	return SignBase(appid, secretId, secretKey, 0, userid, url)
+// gen the sign binding a fileid(pic resource)
+func AppSignOnce(appid uint, secretId string, secretKey string, userid string, fileid string) (string, error) {
+	return SignBase(appid, secretId, secretKey, 0, userid, fileid)
 }
 
+// decode a sign
 func Decode(sign string, appid uint, secretId string, secretKey string) (userid string, expire uint, fileid string, e error) {
 	if "" == sign {
 		e = errors.New("invalid sign string")

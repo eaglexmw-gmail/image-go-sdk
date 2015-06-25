@@ -42,18 +42,6 @@ func VideoTestSign(t *testing.T) {
 	}
 }
 
-func VideoTestSignOnceWithUrl(t *testing.T) {
-	var userid string = "123456"
-	url := "http://200943.video.myqcloud.com/200943/123456/e7e4d587-e5fc-45c4-b5f8-ef0de5ce4f03/original"
-	cloud := VideoCloud{APPID, SECRET_ID, SECRET_KEY}
-	sign, err := cloud.SignOnceWithUrl(userid, url)
-	if nil != err {
-		t.Errorf("create sign fail, err=%s\n", err.Error())
-	} else {
-		fmt.Printf("create sign success, sign=%s\n", sign)
-	}
-}
-
 func VideoTestSignOnce(t *testing.T) {
 	var userid string = "123456"
 	fileid := "0fcfeeeb-461c-4693-913b-f32003de09a4"

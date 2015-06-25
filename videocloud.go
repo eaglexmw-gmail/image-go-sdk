@@ -1,10 +1,7 @@
-/**********************************************************************************************
- #
- # Github : github.com/tencentyun/go-sdk
- # File name : videocloud.go
- # Description : tencent video cloud sdk for go
- #
-**********************************************************************************************/
+// copyright : tencent
+// author : solomonooo
+// github : github.com/tencentyun/go-sdk
+
 package qcloud
 
 import (
@@ -175,7 +172,7 @@ func (vc *VideoCloud) Download(userid string, fileid string, filename string) er
 func (vc *VideoCloud) DownloadWithSign(userid string, fileid string, filename string) error {
 
 	reqUrl := fmt.Sprintf("http://%d.%s/%d/%s/%s/original", vc.Appid, QCLOUD_VIDEO_DOWNLOAD_DOMAIN, vc.Appid, userid, fileid)
-	sign, err := sign.AppSignOnce(vc.Appid, vc.SecretId, vc.SecretKey, userid, reqUrl)
+	sign, err := sign.AppSignOnce(vc.Appid, vc.SecretId, vc.SecretKey, userid, fileid)
 	if nil != err {
 		return err
 	}
@@ -268,8 +265,7 @@ func (vc *VideoCloud) Stat(userid string, fileid string) (info VideoInfo, err er
 
 func (vc *VideoCloud) Delete(userid string, fileid string) error {
 	reqUrl := fmt.Sprintf("http://%s/%d/%s/%s/del", QCLOUD_VIDEO_DOMAIN, vc.Appid, userid, fileid)
-	downloadUrl := fmt.Sprintf("http://%d.%s/%d/%s/%s/original", vc.Appid, QCLOUD_DOWNLOAD_DOMAIN, vc.Appid, userid, fileid)
-	sign, err := sign.AppSignOnce(vc.Appid, vc.SecretId, vc.SecretKey, userid, downloadUrl)
+	sign, err := sign.AppSignOnce(vc.Appid, vc.SecretId, vc.SecretKey, userid, fileid)
 	if nil != err {
 		return err
 	}
@@ -310,13 +306,8 @@ func (vc *VideoCloud) Sign(userid string, expire uint) (string, error) {
 	return sign.AppSign(vc.Appid, vc.SecretId, vc.SecretKey, expire, userid)
 }
 
-func (vc *VideoCloud) SignOnceWithUrl(userid string, downloadUrl string) (string, error) {
-	return sign.AppSignOnce(vc.Appid, vc.SecretId, vc.SecretKey, userid, downloadUrl)
-}
-
 func (vc *VideoCloud) SignOnce(userid string, fileid string) (string, error) {
-	downloadUrl := fmt.Sprintf("http://%d.%s/%d/%s/%s/original", vc.Appid, QCLOUD_DOWNLOAD_DOMAIN, vc.Appid, userid, fileid)
-	return vc.SignOnceWithUrl(userid, downloadUrl)
+	return sign.AppSignOnce(vc.Appid, vc.SecretId, vc.SecretKey, userid, fileid)
 }
 
 func (vc *VideoCloud) CheckSign(userid string, picSign string, fileid string) error {

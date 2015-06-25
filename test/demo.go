@@ -1,10 +1,8 @@
-/**********************************************************************************************
- #
- # Github : github.com/tencentyun/go-sdk
- # File name : demo.go
- # Description : demo
- #
-**********************************************************************************************/
+// copyright : tencent
+// author : solomonooo
+// github : github.com/tencentyun/go-sdk
+
+// this is a demo for qcloud go sdk
 package main
 
 import (
@@ -14,7 +12,7 @@ import (
 
 func main() {
 	pic_test()
-	//video_test()	
+	video_test()	
 }
 
 func pic_test(){
@@ -22,9 +20,11 @@ func pic_test(){
 	sid := "AKIDOXkiS878nYFvc4sggDRxTU56UsmN3LMy"
 	skey := "gMoR2lGvMWzxFGrxJCRoZMhU48f0tsdm"
 
+	
 	cloud := qcloud.PicCloud{appid, sid, skey}
 	fmt.Println("=========================================")
-	info, err := cloud.Upload("123456", "./test.jpg")
+	var analyze qcloud.PicAnalyze
+	info, err := cloud.Upload("123456", "./test.jpg", analyze)
 	if err != nil {
 		fmt.Printf("pic upload failed, err = %s\n", err.Error())
 	} else {
@@ -32,7 +32,6 @@ func pic_test(){
 		info.Print()
 	}
 
-	/*
 	fmt.Println("******************")
 	picInfo, err := cloud.Stat("123456", info.Fileid)
 	if err != nil {
@@ -82,7 +81,28 @@ func pic_test(){
 	} else {
 		fmt.Println("copy pic delete success")
 	}
-	*/
+	
+	fmt.Println("=========================================")
+	analyze.Fuzzy = 1;
+	analyze.Food = 1;
+	//is fuzzy? is food?
+	info, err = cloud.Upload("123456", "./fuzzy.jpg", analyze)
+	if err != nil {
+		fmt.Printf("pic analyze failed, err = %s\n", err.Error())
+	} else {
+		fmt.Println("pic analyze success, pic=./fuzzy.jpg")
+		fmt.Printf("is fuzzy : %d\r\n", info.Analyze.Fuzzy)
+		fmt.Printf("is food : %d\r\n", info.Analyze.Food)
+	}
+	///////
+	info, err = cloud.Upload("123456", "./food.jpg", analyze)
+	if err != nil {
+		fmt.Printf("pic analyze failed, err = %s\n", err.Error())
+	} else {
+		fmt.Println("pic analyze success, pic=./food.jpg")
+		fmt.Printf("is fuzzy : %d\r\n", info.Analyze.Fuzzy)
+		fmt.Printf("is food : %d\r\n", info.Analyze.Food)
+	}
 }
 
 func video_test(){

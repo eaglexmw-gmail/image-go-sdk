@@ -1,10 +1,8 @@
-/**********************************************************************************************
- #
- # Github : github.com/tencentyun/go-sdk
- # File name : picloud.go
- # Description : tencent pic cloud sdk for go
- #
-**********************************************************************************************/
+// copyright : tencent
+// author : solomonooo
+// github : github.com/tencentyun/go-sdk
+
+// Package qcloud implements go sdk for qcloud service of pic & video 
 package qcloud
 
 import (
@@ -24,7 +22,7 @@ import (
 	"github.com/tencentyun/go-sdk/sign"
 )
 
-const QCLOUD_VERSION = "1.1.0"
+const QCLOUD_VERSION = "1.2.1"
 const QCLOUD_DOMAIN = "web.image.myqcloud.com/photos/v1"
 const QCLOUD_DOWNLOAD_DOMAIN = "image.myqcloud.com"
 
@@ -34,10 +32,16 @@ type PicCloud struct {
 	SecretKey string
 }
 
+type PicAnalyze struct {
+	Fuzzy	int
+	Food	int
+}
+
 type UrlInfo struct {
 	Url          string
 	DownloadUrl string
 	Fileid       string
+	Analyze		PicAnalyze
 }
 
 type PicInfo struct {
@@ -92,7 +96,7 @@ func (pc *PicCloud) parseRsp(rsp []byte) (code int, message string, js *simplejs
 	return
 }
 
-func (pc *PicCloud) Upload(userid string, filename string) (info UrlInfo, err error) {
+func (pc *PicCloud) Upload(userid string, filename string, analyze PicAnalyze) (info UrlInfo, err error) {
 	if "" == filename {
 		err = errors.New("invliad filename")
 		return
@@ -102,7 +106,16 @@ func (pc *PicCloud) Upload(userid string, filename string) (info UrlInfo, err er
 	boundary := "-------------------------abcdefg1234567"
 	expire := uint(3600)
 
-	reqUrl += "?analyze=fuzzy.food"
+	var queryString string 
+	if analyze.Fuzzy != 0 {
+		queryString += "fuzzy."
+	}
+	if analyze.Food != 0 {
+		queryString += "food."
+	}
+	if queryString != "" {
+		reqUrl += "?analyze="+strings.TrimRight(queryString, ".")
+	}
 
 	sign, err := sign.AppSign(pc.Appid, pc.SecretId, pc.SecretKey, expire, userid)
 	if nil != err {
@@ -157,10 +170,18 @@ func (pc *PicCloud) Upload(userid string, filename string) (info UrlInfo, err er
 		err = errors.New(desc)
 		return
 	}
+	fmt.Printf("rsp=%s\r\n", string(data))
+
 
 	info.Url, _ = js.Get("data").Get("url").String()
 	info.DownloadUrl, _ = js.Get("data").Get("download_url").String()
 	info.Fileid, _ = js.Get("data").Get("fileid").String()
+	if nil != js.Get("data").Get("is_fuzzy") {
+		info.Analyze.Fuzzy, _ = js.Get("data").Get("is_fuzzy").Int()
+	}
+	if nil != js.Get("data").Get("is_food") {
+		info.Analyze.Food, _ = js.Get("data").Get("is_food").Int()
+	}
 	return
 }
 
@@ -172,7 +193,7 @@ func (pc *PicCloud) Download(userid string, fileid string, filename string) erro
 func (pc *PicCloud) DownloadWithSign(userid string, fileid string, filename string) error {
 
 	reqUrl := fmt.Sprintf("http://%d.%s/%d/%s/%s/original", pc.Appid, QCLOUD_DOWNLOAD_DOMAIN, pc.Appid, userid, fileid)
-	sign, err := sign.AppSignOnce(pc.Appid, pc.SecretId, pc.SecretKey, userid, reqUrl)
+	sign, err := sign.AppSignOnce(pc.Appid, pc.SecretId, pc.SecretKey, userid, fileid)
 	if nil != err {
 		return err
 	}
@@ -261,8 +282,7 @@ func (pc *PicCloud) Stat(userid string, fileid string) (info PicInfo, err error)
 
 func (pc *PicCloud) Copy(userid string, fileid string) (info UrlInfo, err error) {
 	reqUrl := fmt.Sprintf("http://%s/%d/%s/%s/copy", QCLOUD_DOMAIN, pc.Appid, userid, fileid)
-	downloadUrl := fmt.Sprintf("http://%d.%s/%d/%s/%s/original", pc.Appid, QCLOUD_DOWNLOAD_DOMAIN, pc.Appid, userid, fileid)
-	sign, err := sign.AppSignOnce(pc.Appid, pc.SecretId, pc.SecretKey, userid, downloadUrl)
+	sign, err := sign.AppSignOnce(pc.Appid, pc.SecretId, pc.SecretKey, userid, fileid)
 	if nil != err {
 		return
 	}
@@ -305,8 +325,7 @@ func (pc *PicCloud) Copy(userid string, fileid string) (info UrlInfo, err error)
 
 func (pc *PicCloud) Delete(userid string, fileid string) error {
 	reqUrl := fmt.Sprintf("http://%s/%d/%s/%s/del", QCLOUD_DOMAIN, pc.Appid, userid, fileid)
-	downloadUrl := fmt.Sprintf("http://%d.%s/%d/%s/%s/original", pc.Appid, QCLOUD_DOWNLOAD_DOMAIN, pc.Appid, userid, fileid)
-	sign, err := sign.AppSignOnce(pc.Appid, pc.SecretId, pc.SecretKey, userid, downloadUrl)
+	sign, err := sign.AppSignOnce(pc.Appid, pc.SecretId, pc.SecretKey, userid, fileid)
 	if nil != err {
 		return err
 	}
@@ -347,13 +366,8 @@ func (pc *PicCloud) Sign(userid string, expire uint) (string, error) {
 	return sign.AppSign(pc.Appid, pc.SecretId, pc.SecretKey, expire, userid)
 }
 
-func (pc *PicCloud) SignOnceWithUrl(userid string, downloadUrl string) (string, error) {
-	return sign.AppSignOnce(pc.Appid, pc.SecretId, pc.SecretKey, userid, downloadUrl)
-}
-
 func (pc *PicCloud) SignOnce(userid string, fileid string) (string, error) {
-	downloadUrl := fmt.Sprintf("http://%d.%s/%d/%s/%s/original", pc.Appid, QCLOUD_DOWNLOAD_DOMAIN, pc.Appid, userid, fileid)
-	return pc.SignOnceWithUrl(userid, downloadUrl)
+	return sign.AppSignOnce(pc.Appid, pc.SecretId, pc.SecretKey, userid, fileid)
 }
 
 func (pc *PicCloud) CheckSign(userid string, picSign string, fileid string) error {

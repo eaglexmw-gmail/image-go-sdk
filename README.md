@@ -6,6 +6,10 @@ go sdk for picture cloud service of tencentyun.
 
 版本信息
 ----------------------------------- 
+### v1.2.1
+new features:
+增加上传图片的模糊识别和美食识别功能接口
+
 ### v1.2.0
 new features:
 增加视频上传、查询、删除功能

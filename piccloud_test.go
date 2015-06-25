@@ -20,7 +20,8 @@ func TestUpload(t *testing.T) {
 	var userid string = "123456"
 	fileName := "./test/test.jpg"
 	cloud := PicCloud{APPID, SECRET_ID, SECRET_KEY}
-	info, err := cloud.Upload(userid, fileName)
+	var analyze PicAnalyze
+	info, err := cloud.Upload(userid, fileName, analyze)
 	if err != nil {
 		t.Errorf("pic upload failed, userid=%s, pic=%s, err=%s\n", userid, fileName, err.Error())
 	} else {
@@ -38,18 +39,6 @@ func TestSign(t *testing.T) {
 	var expire uint = 3600
 	cloud := PicCloud{APPID, SECRET_ID, SECRET_KEY}
 	sign, err := cloud.Sign(userid, expire)
-	if nil != err {
-		t.Errorf("create sign fail, err=%s\n", err.Error())
-	} else {
-		fmt.Printf("create sign success, sign=%s\n", sign)
-	}
-}
-
-func TestSignOnceWithUrl(t *testing.T) {
-	var userid string = "123456"
-	url := "http://200943.image.myqcloud.com/200943/123456/e7e4d587-e5fc-45c4-b5f8-ef0de5ce4f03/original"
-	cloud := PicCloud{APPID, SECRET_ID, SECRET_KEY}
-	sign, err := cloud.SignOnceWithUrl(userid, url)
 	if nil != err {
 		t.Errorf("create sign fail, err=%s\n", err.Error())
 	} else {

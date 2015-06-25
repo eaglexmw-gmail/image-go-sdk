@@ -1,10 +1,7 @@
-/**********************************************************************************************
- #
- # Github : github.com/tencentyun/go-sdk
- # File name : sign_test.go
- # Description : unit test for qcloud sign
- #
-**********************************************************************************************/
+// copyright : tencent
+// author : solomonooo
+// github : github.com/tencentyun/go-sdk
+
 package sign
 
 import (
@@ -29,8 +26,8 @@ func TestAppSign(t *testing.T) {
 
 func TestAppSignOnce(t *testing.T) {
 	var userid string = "123456"
-	url := "http://web.image.myqcloud.com/2011541224/123456/442d8ddf-59a5-4dd4-b5f1-e38499fb33b4/orignal"
-	sign, err := AppSignOnce(APPID, SECRET_ID, SECRET_KEY, userid, url)
+	fileid := "442d8ddf-59a5-4dd4-b5f1-e38499fb33b4"
+	sign, err := AppSignOnce(APPID, SECRET_ID, SECRET_KEY, userid, fileid)
 	if err != nil {
 		t.Errorf("gen sign failed, err = %s\n", err.Error())
 	} else {
