@@ -22,7 +22,7 @@ import (
 	"github.com/tencentyun/go-sdk/sign"
 )
 
-const QCLOUD_VERSION = "1.2.2"
+const QCLOUD_VERSION = "1.2.1"
 const QCLOUD_DOMAIN = "web.image.myqcloud.com/photos/v1"
 const QCLOUD_DOWNLOAD_DOMAIN = "image.myqcloud.com"
 
