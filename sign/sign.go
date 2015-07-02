@@ -19,7 +19,7 @@ import (
 
 const HMAC_LENGTH = 20
 
-func SignBase(appid uint, secretId string, secretKey string, expire uint, userid string, fileid string) (string, error) {
+func SignBase(appid uint, secretId string, secretKey string, bucket string, expire uint, userid string, fileid string) (string, error) {
 	if "" == secretId || "" == secretKey {
 		return "", errors.New("invalid params, secret id or key is empty")
 	}
@@ -32,17 +32,28 @@ func SignBase(appid uint, secretId string, secretKey string, expire uint, userid
 		expireTime += uint(now)
 	}
 
-	plainStr := fmt.Sprintf("a=%d&k=%s&e=%d&t=%d&r=%d&u=%s&f=%s",
-		appid,
-		secretId,
-		expireTime,
-		now,
-		rdm,
-		userid,
-		fileid)
-
-	fmt.Println("sign=", plainStr)
-
+	var plainStr string
+	if "" == bucket {
+		plainStr = fmt.Sprintf("a=%d&k=%s&e=%d&t=%d&r=%d&u=%s&f=%s",
+			appid,
+			secretId,
+			expireTime,
+			now,
+			rdm,
+			userid,
+			fileid)
+	}else{
+		plainStr = fmt.Sprintf("a=%d&b=%s&k=%s&e=%d&t=%d&r=%d&u=%s&f=%s",
+			appid,
+			bucket,
+			secretId,
+			expireTime,
+			now,
+			rdm,
+			userid,
+			fileid)
+	}
+	//fmt.Println("sign=", plainStr)
 	cryptoStr := []byte(plainStr)
 	h := hmac.New(sha1.New, []byte(secretKey))
 	h.Write(cryptoStr)
@@ -54,16 +65,26 @@ func SignBase(appid uint, secretId string, secretKey string, expire uint, userid
 
 // gen the sign with a expire time.
 func AppSign(appid uint, secretId string, secretKey string, expire uint, userid string) (string, error) {
-	return SignBase(appid, secretId, secretKey, expire, userid, "")
+	return SignBase(appid, secretId, secretKey, "", expire, userid, "")
 }
 
 // gen the sign binding a fileid(pic resource)
 func AppSignOnce(appid uint, secretId string, secretKey string, userid string, fileid string) (string, error) {
-	return SignBase(appid, secretId, secretKey, 0, userid, fileid)
+	return SignBase(appid, secretId, secretKey, "", 0, userid, fileid)
+}
+
+// gen the sign with a expire time.
+func AppSignV2(appid uint, secretId string, secretKey string, bucket string, expire uint, userid string) (string, error) {
+	return SignBase(appid, secretId, secretKey, bucket, expire, userid, "")
+}
+
+// gen the sign binding a fileid(pic resource)
+func AppSignOnceV2(appid uint, secretId string, secretKey string, bucket string, userid string, fileid string) (string, error) {
+	return SignBase(appid, secretId, secretKey, bucket, 0, userid, fileid)
 }
 
 // decode a sign
-func Decode(sign string, appid uint, secretId string, secretKey string) (userid string, expire uint, fileid string, e error) {
+func Decode(sign string, appid uint, secretId string, secretKey string) (userid string, expire uint, fileid string, bucket string, e error) {
 	if "" == sign {
 		e = errors.New("invalid sign string")
 		return 
@@ -100,34 +121,44 @@ func Decode(sign string, appid uint, secretId string, secretKey string) (userid 
 
 	//check cryto string
 	fields := strings.Split(string(cryptoStr), "&")
+	cnt := 0
 	//check appid
-	if fields[0] != ("a="+strconv.Itoa(int(appid))) {
+	if fields[cnt] != ("a="+strconv.Itoa(int(appid))) {
 		desc := fmt.Sprintf("invalid appid, appid=%d, sign=%s", appid, fields[0])
 		e = errors.New(desc)
 		return
 	}
+	cnt++
 	//check skey
-	if fields[1] != ("k="+secretId) {
+	if strings.HasPrefix(fields[cnt], "b=") {
+		//v2
+		bucket = strings.TrimLeft(fields[cnt], "b=")
+		cnt++
+	}
+	if fields[cnt] != ("k="+secretId) {
 		desc := fmt.Sprintf("invalid secret_id, sid=%s, sign=%s", secretId, fields[1])
 		e = errors.New(desc)
 		return
 	}
+	cnt++
 	//check time
 	//[3] is create time
 	//[2] is expire time
-	tmp, e := strconv.Atoi(strings.TrimLeft(fields[2], "e="))
+	tmp, e := strconv.Atoi(strings.TrimLeft(fields[cnt], "e="))
 	if nil != e {
 		return
 	}
 	expire = uint(tmp)
+	cnt+=3
 	//check userid
-	userid = strings.TrimLeft(fields[5], "u=")
+	userid = strings.TrimLeft(fields[cnt], "u=")
+	cnt++
 	//check fileid
-	fileid = strings.TrimLeft(fields[6], "f=")
+	fileid = strings.TrimLeft(fields[cnt], "f=")
 	/////
 	if ( expire == 0 && fileid == "") ||
 			(expire != 0 && fileid != "" ) {
-		desc := fmt.Sprintf("invalid expire time or fileid, expire=%s, fileid=%s", fields[2], fields[6])
+		desc := fmt.Sprintf("invalid expire time or fileid, expire=%s, fileid=%s", expire, fileid)
 		e = errors.New(desc)
 		return
 	}

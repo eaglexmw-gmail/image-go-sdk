@@ -16,7 +16,7 @@ import (
 func VideoTestUpload(t *testing.T) {
 	var userid string = "123456"
 	fileName := "./test/test.mp4"
-	cloud := VideoCloud{APPID, SECRET_ID, SECRET_KEY}
+	cloud := VideoCloud{APPID_V1, SID_V1, SKEY_V1}
 	info, err := cloud.Upload(userid, fileName,"test_title","test_desc","test_magic_context")
 	if err != nil {
 		t.Errorf("video upload failed, userid=%s, video=%s, err=%s\n", userid, fileName, err.Error())
@@ -33,7 +33,7 @@ func VideoTestUpload(t *testing.T) {
 func VideoTestSign(t *testing.T) {
 	var userid string = "123456"
 	var expire uint = 3600
-	cloud := VideoCloud{APPID, SECRET_ID, SECRET_KEY}
+	cloud := VideoCloud{APPID_V1, SID_V1, SKEY_V1}
 	sign, err := cloud.Sign(userid, expire)
 	if nil != err {
 		t.Errorf("create sign fail, err=%s\n", err.Error())
@@ -45,7 +45,7 @@ func VideoTestSign(t *testing.T) {
 func VideoTestSignOnce(t *testing.T) {
 	var userid string = "123456"
 	fileid := "0fcfeeeb-461c-4693-913b-f32003de09a4"
-	cloud := VideoCloud{APPID, SECRET_ID, SECRET_KEY}
+	cloud := VideoCloud{APPID_V1, SID_V1, SKEY_V1}
 	sign, err := cloud.SignOnce(userid, fileid)
 	if nil != err {
 		t.Errorf("create sign fail, err=%s\n", err.Error())
@@ -57,7 +57,7 @@ func VideoTestSignOnce(t *testing.T) {
 func VideoTestCheckSign(t *testing.T) {
 	var userid string = "123456"
 	sign := "rxWs//7zkmp8q/YVYdWOPkKPGTthPTIwMDk0MyZrPUFLSURPWGtpUzg3OG5ZRnZjNHNnZ0RSeFRVNTZVc21OM0xNeSZlPTE0MzMyMjAzNjYmdD0xNDMzMjE2NzY2JnI9NTI2MzU3MjYxJnU9MTIzNDU2JmY9"
-	cloud := VideoCloud{APPID, SECRET_ID, SECRET_KEY}
+	cloud := VideoCloud{APPID_V1, SID_V1, SKEY_V1}
 	err := cloud.CheckSign(userid, sign, "")
 	if nil != err {
 		t.Errorf("check sign failed, err=%s\n", err.Error())

@@ -15,7 +15,7 @@ const SECRET_KEY = "SU4Qn0GoK0YRNS97p0l5rAsxwxcN6Il3"
 
 func TestAppSign(t *testing.T) {
 	var userid string = "123456"
-	var expire uint = 3600
+	var expire uint = 3600*24*7
 	sign, err := AppSign(APPID, SECRET_ID, SECRET_KEY, expire, userid)
 	if err != nil {
 		t.Errorf("gen sign failed, err = %s\n", err.Error())
@@ -38,7 +38,7 @@ func TestAppSignOnce(t *testing.T) {
 func TestDecode(t *testing.T) {
 	//test1
 	sign := "gh8WN5lyExipeQ5SAfzif13LWEJhPTIwMDk0MSZrPUFLSURoNTF3SUZISjEzTWJjNUFXZDM3ejZXbVF3SWRUZ2hCdSZlPTE0MzMxNjc0MDUmdD0xNDMzMTYzODA1JnI9MTkwNjQ3MzUwMyZ1PTEyMzQ1NiZmPQ=="
-	userid, expire, fileid, err := Decode(sign, APPID, SECRET_ID, SECRET_KEY)
+	userid, expire, fileid, bucket, err := Decode(sign, APPID, SECRET_ID, SECRET_KEY)
 	if err != nil {
 		t.Error("decode error, err=%s\n", err.Error())
 	}else if userid != "123456" {
@@ -47,13 +47,15 @@ func TestDecode(t *testing.T) {
 		t.Error("decode expire info error, expire=0\n")
 	}else if fileid != "" {
 		t.Error("decode fileid info error, fileid must be empty\n")
+	}else if bucket != "" {
+		t.Error("decode bucket info error, bucket must be empty\n")
 	}
 }
 
 func TestDecode2(t *testing.T) {
 	//test2
 	sign := "ROAtPTf9pbN5vRMFpoKCMjI5gDFhPTIwMDk0MSZrPUFLSURoNTF3SUZISjEzTWJjNUFXZDM3ejZXbVF3SWRUZ2hCdSZlPTAmdD0xNDMzMTYzODA1JnI9MTkwNjQ3MzUwMyZ1PTEyMzQ1NiZmPTQ0MmQ4ZGRmLTU5YTUtNGRkNC1iNWYxLWUzODQ5OWZiMzNiNA=="
-	userid, expire, fileid, err := Decode(sign, APPID, SECRET_ID, SECRET_KEY)
+	userid, expire, fileid, bucket, err := Decode(sign, APPID, SECRET_ID, SECRET_KEY)
 	if err != nil {
 		t.Error("decode error, err=%s\n", err.Error())
 	}else if userid != "123456" {
@@ -62,19 +64,21 @@ func TestDecode2(t *testing.T) {
 		t.Error("decode expire info error, expire must be 0\n")
 	}else if fileid == "" {
 		t.Error("decode fileid info error, fileid is empty\n")
+	}else if bucket != "" {
+		t.Error("decode bucket info error, bucket must be empty\n")
 	}
 }
 
 func TestDecode3(t *testing.T) {
 	//wrong sign
 	sign := "gh8WN5lyExipeQ5SBfzif13LWEJhPTIwMDk0MSZrPUFLSURoNTF3SUZISjEzTWJjNUFXZDM3ejZXbVF3SWRUZ2hCdSZlPTE0MzMxNjc0MDUmdD0xNDMzMTYzODA1JnI9MTkwNjQ3MzUwMyZ1PTEyMzQ1NiZmPQ=="
-	_, _, _, err := Decode(sign, APPID, SECRET_ID, SECRET_KEY)
+	_, _, _, _, err := Decode(sign, APPID, SECRET_ID, SECRET_KEY)
 	if err == nil {
 		t.Error("decode error, this sign is wrong!\n")
 	}
 	//wrong appid
 	sign = "76n8W8B0Y+fp1ClLLjX8vsRBkFNhPTIwMDk0MCZrPUFLSURoNTF3SUZISjEzTWJjNUFXZDM3ejZXbVF3SWRUZ2hCdSZlPTE0MzMxNjgzNTYmdD0xNDMzMTY0NzU2JnI9NDk0MTY2NjMwJnU9MTIzNDU2JmY9"
-	_, _, _, err = Decode(sign, APPID, SECRET_ID, SECRET_KEY)
+	_, _, _, _, err = Decode(sign, APPID, SECRET_ID, SECRET_KEY)
 	if err == nil {
 		t.Error("decode error, this sign is wrong!\n")
 	}
@@ -83,13 +87,13 @@ func TestDecode3(t *testing.T) {
 func TestDecode4(t *testing.T) {
 	//test2
 	sign := "ROAtPTf=8pbN5vRMFpoKCMjI5gDFhPTIwMDk0MSZrPUFLSURoNTF3SUZISjEzTWJjNUFXZDM3ejZXbVF3SWRUZ2hCdSZlPTAmdD0xNDMzMTYzODA1JnI9MTkwNjQ3MzUwMyZ1PTEyMzQ1NiZmPTQ0MmQ4ZGRmLTU5YTUtNGRkNC1iNWYxLWUzODQ5OWZiMzNiNA=="
-	_, _, _, err := Decode(sign, APPID, SECRET_ID, SECRET_KEY)
+	_, _, _, _, err := Decode(sign, APPID, SECRET_ID, SECRET_KEY)
 	if err == nil {
 		t.Error("decode error, this sign is wrong!\n")
 	}
 	//wrong appid
 	sign = "NGu6Vr0av2DNYNcDLInDFC/dWl9hPTIwMDk0MCZrPUFLSURoNTF3SUZISjEzTWJjNUFXZDM3ejZXbVF3SWRUZ2hCdSZlPTAmdD0xNDMzMTY0NzU2JnI9NDk0MTY2NjMwJnU9MTIzNDU2JmY9NDQyZDhkZGYtNTlhNS00ZGQ0LWI1ZjEtZTM4NDk5ZmIzM2I0"
-	_, _, _, err = Decode(sign, APPID, SECRET_ID, SECRET_KEY)
+	_, _, _, _, err = Decode(sign, APPID, SECRET_ID, SECRET_KEY)
 	if err == nil {
 		t.Error("decode error, this sign is wrong!\n")
 	}

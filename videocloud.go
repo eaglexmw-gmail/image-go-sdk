@@ -315,7 +315,7 @@ func (vc *VideoCloud) CheckSign(userid string, picSign string, fileid string) er
 		return errors.New("empty sign")
 	}
 	
-	uid, expire, fid, err := sign.Decode(picSign, vc.Appid, vc.SecretId, vc.SecretKey)
+	uid, expire, fid, _, err := sign.Decode(picSign, vc.Appid, vc.SecretId, vc.SecretKey)
 	if nil != err {
 		return err
 	}else if uid != userid {
