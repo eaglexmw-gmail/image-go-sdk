@@ -22,7 +22,7 @@ func pic_test(){
 
 	cloud := qcloud.PicCloud{appid, sid, skey, ""}
 	fmt.Println("=========================================")
-	info, err := cloud.Upload("123456", "./test.jpg", "")
+	info, err := cloud.Upload("123456", "./test.jpg")
 	if err != nil {
 		fmt.Printf("pic upload failed, err = %s\n", err.Error())
 	} else {

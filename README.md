@@ -6,6 +6,9 @@ go sdk for picture cloud service of tencentyun.
 
 版本信息
 ----------------------------------- 
+### v2.0.0
+支持2.0版本的图片restful api。内部实现了高度封装，对开发者透明。
+
 ### v1.2.1
 new features:
 增加上传图片的模糊识别和美食识别功能接口
@@ -90,36 +93,69 @@ How to start
 	APP_ID 
 	SECRET_ID
 	SECRET_KEY
+2.0版本的云服务在使用前，还需要先创建空间。在使用2.0 api时，需要使用空间名（Bucket）。
 
 ### 2. 引入qlcoud包
 		
 	import "github.com/tencentyun/go-sdk"
 
-### 3. 创建PicCloud对象
+### 3. 创建对应操作类的对象
+如果要使用图片，需要创建图片操作类对象
 		
-	p_cloud := qcloud.PicCloud{appid, sid, skey}
-	v_cloud := qcloud.VideoCloud{appid, sid, skey}
+	//v1版本
+	cloud := qcloud.PicCloud{appid, sid, skey, ""}
+	//v2版本
+	cloud := qcloud.PicCloud{appid, sid, skey, bucket}
+如果要使用视频，需要创建视频操作类对象
+		
+	cloud := qcloud.VideoCloud{appid, sid, skey}
 
 ### 4. 调用对应的方法
-上传
-
-	pic_info, err := p_cloud.upload(123456, "./test.jpg")
-	video_info, err := v_cloud.upload(123456, "./test.mp4")	
-查询
-
-	pic_info, err := p_cloud.Stat(123456, fileid)
-	video_info, err := v_cloud.Stat(123456, fileid)
-复制
+在创建完对象后，根据实际需求，调用对应的操作方法就可以了。sdk提供的方法包括：签名计算、上传、复制、查询、下载和删除等。
+#### 获得版本信息
 		
-	info, err := p_cloud.Copy(123456, fileid)
-删除
+	version := cloud.Version()
+	
+#### 上传数据
+如果需要上传图片，根据不同的需求，可以选择不同的上传方法
+			
+	//pic_info是上传的返回结果
+	//最简单的上传接口，提供userid和图片路径即可
+	pic_info, err := cloud.upload(userid, filepath)
+	//可以自定义fileid的上传接口
+	pic_info, err := cloud.uploadWithFileid(userid, filepath, fileid)
+如果需要上传视频
+		
+	video_info, err := cloud.upload(userid, filepath)
 
-	err = p_cloud.Delete(123456, fileid)
-	err = v_cloud.Delete(123456, fileid)	
-下载
+#### 复制图片
+		
+	info, err := cloud.Copy(userid, fileid)
+	
+#### 查询图片(视频)
+		
+	//图片查询
+	pic_info, err := cloud.Stat(userid, fileid)
+	//视频查询
+	video_info, err := cloud.Stat(userid, fileid)
 
-	err = p_cloud.Download(123456, info2.Fileid, "./test2.jpg")
-	err = v_cloud.Download(123456, info2.Fileid, "./test2.mp4")
+#### 删除图片(视频)
+		
+	err = cloud.Delete(userid, fileid)
+	
+#### 下载图片
+下载图片直接利用图片的下载url即可，开发者可以自行处理，这里提供的是本地下载的方法。
+如果开启了防盗链，还需要在下载url后面追加签名，如果要自行处理，请参考腾讯云的wiki页，熟悉鉴权签名的算法。
+		
+	//filename是要保存的文件路径	
+	//不开启防盗链
+	err = cloud.Download(userid, fileid, filepath)
+	//开启防盗链
+    	err = cloud.DownloadWithSign(userid, fileid, filepath)
+	//直接提供url下载
+	err = cloud.DownloadByUrl(url, filepath)
+
 ### demo示例
 请阅读test/demo.go示例
+对于v2版本的图片api，请参考demoV2.go
 	

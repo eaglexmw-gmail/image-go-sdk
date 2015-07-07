@@ -123,12 +123,12 @@ func (pc *PicCloud) parseRsp(rsp []byte) (code int, message string, js *simplejs
 	return
 }
 
-func (pc *PicCloud) Upload(userid string, filename string, fileid string) (UrlInfo, error) {
+func (pc *PicCloud) Upload(userid string, filename string) (UrlInfo, error) {
 	var analyze PicAnalyze
 	return pc.UploadBase(userid, filename, "", analyze)
 }
 
-func (pc *PicCloud) Upload(userid string, filename string, fileid string) (UrlInfo, error) {
+func (pc *PicCloud) UploadWithFileid(userid string, filename string, fileid string) (UrlInfo, error) {
 	var analyze PicAnalyze
 	return pc.UploadBase(userid, filename, fileid, analyze)
 }

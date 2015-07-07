@@ -28,7 +28,7 @@ func TestUpload(t *testing.T) {
 	var userid string = "123456"
 	fileName := "./test/test.jpg"
 	cloud := PicCloud{APPID_V1, SID_V1, SKEY_V1, ""}
-	info, err := cloud.Upload(userid, fileName, "")
+	info, err := cloud.Upload(userid, fileName)
 	if err != nil {
 		t.Errorf("pic upload failed, userid=%s, pic=%s, err=%s\n", userid, fileName, err.Error())
 	} else {
@@ -65,7 +65,7 @@ func TestUploadV2(t *testing.T) {
 	var userid string = "123456"
 	fileName := "./test/test.jpg"
 	cloud := PicCloud{APPID_V2, SID_V2, SKEY_V2, BUCKET}
-	info, err := cloud.Upload(userid, fileName, "")
+	info, err := cloud.Upload(userid, fileName)
 	if err != nil {
 		t.Errorf("pic upload failed, userid=%s, pic=%s, err=%s\n", userid, fileName, err.Error())
 	} else {
