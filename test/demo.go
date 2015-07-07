@@ -12,7 +12,7 @@ import (
 
 func main() {
 	pic_test()
-	video_test()	
+	//video_test()	
 }
 
 func pic_test(){
@@ -20,7 +20,6 @@ func pic_test(){
 	sid := "AKIDOXkiS878nYFvc4sggDRxTU56UsmN3LMy"
 	skey := "gMoR2lGvMWzxFGrxJCRoZMhU48f0tsdm"
 
-	
 	cloud := qcloud.PicCloud{appid, sid, skey, ""}
 	fmt.Println("=========================================")
 	info, err := cloud.Upload("123456", "./test.jpg", "")
@@ -82,7 +81,7 @@ func pic_test(){
 	}
 	
 	fmt.Println("=========================================")
-	sign, _ := cloud.Sign("123456", 3600)
+	sign, _ := cloud.Sign("123456", 3600*24*7)
 	fmt.Printf("gen sign with expire time, sign = %s\n", sign)
 	sign, _ = cloud.SignOnce("123456", info.Fileid)
 	fmt.Printf("gen sign with fileid, sign = %s\n", sign)
@@ -141,4 +140,5 @@ func video_test(){
 	} else {
 		fmt.Println("video delete success")
 	}
+	
 }

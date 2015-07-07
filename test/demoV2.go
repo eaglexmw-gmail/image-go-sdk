@@ -81,6 +81,12 @@ func pic_test(){
 	}
 	
 	fmt.Println("=========================================")
+	sign, _ := cloud.Sign("123456", 3600*24*7)
+	fmt.Printf("gen sign with expire time, sign = %s\n", sign)
+	sign, _ = cloud.SignOnce("123456", info.Fileid)
+	fmt.Printf("gen sign with fileid, sign = %s\n", sign)
+
+	fmt.Println("=========================================")
 	var analyze qcloud.PicAnalyze
 	analyze.Fuzzy = 1;
 	analyze.Food = 1;
