@@ -83,10 +83,12 @@ func (pc *PicCloud) getUrl(userid string, fileid string) (url string) {
 	//check version
 	if "" == pc.Bucket {
 		//v1
-		url = fmt.Sprintf("http://web.%s/photos/v1/%d/%s", QCLOUD_DOMAIN, pc.Appid, userid)
+		url = fmt.Sprintf("http://eleme.image.myqcloud.com/photos/v1/%d/%s", pc.Appid, userid)
+		//url = fmt.Sprintf("http://web.%s/photos/v1/%d/%s", QCLOUD_DOMAIN, pc.Appid, userid)
 	}else {
 		//v2
-		url = fmt.Sprintf("http://web.%s/photos/v2/%d/%s/%s", QCLOUD_DOMAIN, pc.Appid, pc.Bucket, userid)
+		url = fmt.Sprintf("http://eleme.image.myqcloud.com/photos/v2/%d/%s/%s", pc.Appid, pc.Bucket, userid)
+		//url = fmt.Sprintf("http://web.%s/photos/v1/%d/%s", QCLOUD_DOMAIN, pc.Appid, userid)
 	}
 
 	if "" != fileid {
