@@ -65,6 +65,7 @@ func pic_test(){
 		fmt.Println("pic download success")
 	}
 
+	/*
 	fmt.Println("=========================================")
 	err = cloud.Delete("123456", info.Fileid)
 	if err != nil {
@@ -79,7 +80,7 @@ func pic_test(){
 	} else {
 		fmt.Println("copy pic delete success")
 	}
-	
+	*/
 	fmt.Println("=========================================")
 	sign, _ := cloud.Sign("123456", 3600*24*7)
 	fmt.Printf("gen sign with expire time, sign = %s\n", sign)
