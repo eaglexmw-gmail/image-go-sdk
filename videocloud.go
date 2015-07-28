@@ -99,7 +99,7 @@ func (vc *VideoCloud) Upload(userid string, filename string, title string, desc 
 	boundary := "-------------------------abcdefg1234567"
 	expire := uint(3600)
 
-	sign, err := sign.AppSign(vc.Appid, vc.SecretId, vc.SecretKey, expire, userid)
+	sign, err := sign.AppSign(vc.Appid, vc.SecretId, vc.SecretKey, expire)
 	if nil != err {
 		return
 	}
@@ -172,7 +172,7 @@ func (vc *VideoCloud) Download(userid string, fileid string, filename string) er
 func (vc *VideoCloud) DownloadWithSign(userid string, fileid string, filename string) error {
 
 	reqUrl := fmt.Sprintf("http://%d.%s/%d/%s/%s/original", vc.Appid, QCLOUD_VIDEO_DOWNLOAD_DOMAIN, vc.Appid, userid, fileid)
-	sign, err := sign.AppSignOnce(vc.Appid, vc.SecretId, vc.SecretKey, userid, fileid)
+	sign, err := sign.AppSignOnce(vc.Appid, vc.SecretId, vc.SecretKey, fileid)
 	if nil != err {
 		return err
 	}
@@ -265,7 +265,7 @@ func (vc *VideoCloud) Stat(userid string, fileid string) (info VideoInfo, err er
 
 func (vc *VideoCloud) Delete(userid string, fileid string) error {
 	reqUrl := fmt.Sprintf("http://%s/%d/%s/%s/del", QCLOUD_VIDEO_DOMAIN, vc.Appid, userid, fileid)
-	sign, err := sign.AppSignOnce(vc.Appid, vc.SecretId, vc.SecretKey, userid, fileid)
+	sign, err := sign.AppSignOnce(vc.Appid, vc.SecretId, vc.SecretKey, fileid)
 	if nil != err {
 		return err
 	}
@@ -303,11 +303,11 @@ func (vc *VideoCloud) Delete(userid string, fileid string) error {
 }
 
 func (vc *VideoCloud) Sign(userid string, expire uint) (string, error) {
-	return sign.AppSign(vc.Appid, vc.SecretId, vc.SecretKey, expire, userid)
+	return sign.AppSign(vc.Appid, vc.SecretId, vc.SecretKey, expire)
 }
 
 func (vc *VideoCloud) SignOnce(userid string, fileid string) (string, error) {
-	return sign.AppSignOnce(vc.Appid, vc.SecretId, vc.SecretKey, userid, fileid)
+	return sign.AppSignOnce(vc.Appid, vc.SecretId, vc.SecretKey, fileid)
 }
 
 func (vc *VideoCloud) CheckSign(userid string, picSign string, fileid string) error {
@@ -315,12 +315,9 @@ func (vc *VideoCloud) CheckSign(userid string, picSign string, fileid string) er
 		return errors.New("empty sign")
 	}
 	
-	uid, expire, fid, _, err := sign.Decode(picSign, vc.Appid, vc.SecretId, vc.SecretKey)
+	expire, fid, _, err := sign.Decode(picSign, vc.Appid, vc.SecretId, vc.SecretKey)
 	if nil != err {
 		return err
-	}else if uid != userid {
-		desc := fmt.Sprintf("userid conflict, userid=%s, userid in sign=%d", userid, uid)
-		return errors.New(desc)
 	}
 	//check time
 	if expire != 0 {

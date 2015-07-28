@@ -22,7 +22,7 @@ func pic_test(){
 	
 	cloud := qcloud.PicCloud{appid, sid, skey, bucket}
 	fmt.Println("=========================================")
-	info, err := cloud.Upload("123456", "./test.jpg")
+	info, err := cloud.Upload("./pic/test.jpg")
 	if err != nil {
 		fmt.Printf("pic upload failed, err = %s\n", err.Error())
 	} else {
@@ -30,8 +30,8 @@ func pic_test(){
 		info.Print()
 	}
 
-	fmt.Println("******************")
-	picInfo, err := cloud.Stat("123456", info.Fileid)
+	fmt.Println("=========================================")
+	picInfo, err := cloud.Stat(info.Fileid)
 	if err != nil {
 		fmt.Printf("pic stat failed, err = %s\n", err.Error())
 	} else {
@@ -40,7 +40,7 @@ func pic_test(){
 	}
 
 	fmt.Println("=========================================")
-	info2, err := cloud.Copy("123456", info.Fileid)
+	info2, err := cloud.Copy(info.Fileid)
 	if err != nil {
 		fmt.Printf("pic copy failed, err = %s\n", err.Error())
 	} else {
@@ -48,17 +48,8 @@ func pic_test(){
 		info2.Print()
 	}
 
-	fmt.Println("******************")
-	picInfo, err = cloud.Stat("123456", info2.Fileid)
-	if err != nil {
-		fmt.Printf("copy pic stat failed, err = %s\n", err.Error())
-	} else {
-		fmt.Println("copy pic stat success")
-		picInfo.Print()
-	}
-
 	fmt.Println("=========================================")
-	err = cloud.Download("123456", info2.Fileid, "./test2.jpg")
+	err = cloud.Download(info2.Fileid, "./pic/test2.jpg")
 	if err != nil {
 		fmt.Printf("pic download failed, err = %s\n", err.Error())
 	} else {
@@ -66,24 +57,19 @@ func pic_test(){
 	}
 
 	fmt.Println("=========================================")
-	err = cloud.Delete("123456", info.Fileid)
+	/*
+	err = cloud.Delete(info.Fileid)
 	if err != nil {
 		fmt.Printf("pic delete failed, err = %s\n", err.Error())
 	} else {
 		fmt.Println("pic delete success")
 	}
-
-	err = cloud.Delete("123456", info2.Fileid)
-	if err != nil {
-		fmt.Printf("copy pic delete failed, err = %s\n", err.Error())
-	} else {
-		fmt.Println("copy pic delete success")
-	}
+	*/
 	
 	fmt.Println("=========================================")
-	sign, _ := cloud.Sign("123456", 3600*24*7)
+	sign, _ := cloud.Sign(3600*24*7)
 	fmt.Printf("gen sign with expire time, sign = %s\n", sign)
-	sign, _ = cloud.SignOnce("123456", info.Fileid)
+	sign, _ = cloud.SignOnce(info.Fileid)
 	fmt.Printf("gen sign with fileid, sign = %s\n", sign)
 
 	fmt.Println("=========================================")
@@ -91,11 +77,11 @@ func pic_test(){
 	analyze.Fuzzy = 1;
 	analyze.Food = 1;
 	//is fuzzy? is food?
-	info, err = cloud.UploadBase("123456", "./fuzzy.jpg", "", analyze)
+	info, err = cloud.UploadBase("./pic/fuzzy.jpg", "", analyze)
 	if err != nil {
 		fmt.Printf("pic analyze failed, err = %s\n", err.Error())
 	} else {
-		fmt.Println("pic analyze success, pic=./fuzzy.jpg")
+		fmt.Println("pic analyze success, pic=./pic/fuzzy.jpg")
 		fmt.Printf("is fuzzy : %d\r\n", info.Analyze.Fuzzy)
 		fmt.Printf("is food : %d\r\n", info.Analyze.Food)
 	}

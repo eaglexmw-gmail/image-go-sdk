@@ -19,7 +19,7 @@ import (
 
 const HMAC_LENGTH = 20
 
-func SignBase(appid uint, secretId string, secretKey string, bucket string, expire uint, userid string, fileid string) (string, error) {
+func SignBase(appid uint, secretId string, secretKey string, bucket string, expire uint, fileid string) (string, error) {
 	if "" == secretId || "" == secretKey {
 		return "", errors.New("invalid params, secret id or key is empty")
 	}
@@ -40,7 +40,7 @@ func SignBase(appid uint, secretId string, secretKey string, bucket string, expi
 			expireTime,
 			now,
 			rdm,
-			userid,
+			"0",
 			fileid)
 	}else{
 		plainStr = fmt.Sprintf("a=%d&b=%s&k=%s&e=%d&t=%d&r=%d&u=%s&f=%s",
@@ -50,7 +50,7 @@ func SignBase(appid uint, secretId string, secretKey string, bucket string, expi
 			expireTime,
 			now,
 			rdm,
-			userid,
+			"0",
 			fileid)
 	}
 	//fmt.Println("sign=", plainStr)
@@ -64,27 +64,27 @@ func SignBase(appid uint, secretId string, secretKey string, bucket string, expi
 }
 
 // gen the sign with a expire time.
-func AppSign(appid uint, secretId string, secretKey string, expire uint, userid string) (string, error) {
-	return SignBase(appid, secretId, secretKey, "", expire, userid, "")
+func AppSign(appid uint, secretId string, secretKey string, expire uint) (string, error) {
+	return SignBase(appid, secretId, secretKey, "", expire, "")
 }
 
 // gen the sign binding a fileid(pic resource)
-func AppSignOnce(appid uint, secretId string, secretKey string, userid string, fileid string) (string, error) {
-	return SignBase(appid, secretId, secretKey, "", 0, userid, fileid)
+func AppSignOnce(appid uint, secretId string, secretKey string, fileid string) (string, error) {
+	return SignBase(appid, secretId, secretKey, "", 0, fileid)
 }
 
 // gen the sign with a expire time.
-func AppSignV2(appid uint, secretId string, secretKey string, bucket string, expire uint, userid string) (string, error) {
-	return SignBase(appid, secretId, secretKey, bucket, expire, userid, "")
+func AppSignV2(appid uint, secretId string, secretKey string, bucket string, expire uint) (string, error) {
+	return SignBase(appid, secretId, secretKey, bucket, expire, "")
 }
 
 // gen the sign binding a fileid(pic resource)
-func AppSignOnceV2(appid uint, secretId string, secretKey string, bucket string, userid string, fileid string) (string, error) {
-	return SignBase(appid, secretId, secretKey, bucket, 0, userid, fileid)
+func AppSignOnceV2(appid uint, secretId string, secretKey string, bucket string, fileid string) (string, error) {
+	return SignBase(appid, secretId, secretKey, bucket, 0, fileid)
 }
 
 // decode a sign
-func Decode(sign string, appid uint, secretId string, secretKey string) (userid string, expire uint, fileid string, bucket string, e error) {
+func Decode(sign string, appid uint, secretId string, secretKey string) (expire uint, fileid string, bucket string, e error) {
 	if "" == sign {
 		e = errors.New("invalid sign string")
 		return 
@@ -149,10 +149,7 @@ func Decode(sign string, appid uint, secretId string, secretKey string) (userid 
 		return
 	}
 	expire = uint(tmp)
-	cnt+=3
-	//check userid
-	userid = strings.TrimLeft(fields[cnt], "u=")
-	cnt++
+	cnt+=4
 	//check fileid
 	fileid = strings.TrimLeft(fields[cnt], "f=")
 	/////

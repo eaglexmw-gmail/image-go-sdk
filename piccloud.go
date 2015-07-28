@@ -83,9 +83,11 @@ func (pc *PicCloud) getUrl(userid string, fileid string) (url string) {
 	//check version
 	if "" == pc.Bucket {
 		//v1
+		//url = fmt.Sprintf("http://eleme.image.myqcloud.com/photos/v1/%d/%s", pc.Appid, userid)
 		url = fmt.Sprintf("http://web.%s/photos/v1/%d/%s", QCLOUD_DOMAIN, pc.Appid, userid)
 	}else {
 		//v2
+		//url = fmt.Sprintf("http://eleme.image.myqcloud.com/photos/v2/%d/%s/%s", pc.Appid, pc.Bucket, userid)
 		url = fmt.Sprintf("http://web.%s/photos/v2/%d/%s/%s", QCLOUD_DOMAIN, pc.Appid, pc.Bucket, userid)
 	}
 
@@ -123,23 +125,23 @@ func (pc *PicCloud) parseRsp(rsp []byte) (code int, message string, js *simplejs
 	return
 }
 
-func (pc *PicCloud) Upload(userid string, filename string) (UrlInfo, error) {
+func (pc *PicCloud) Upload(filename string) (UrlInfo, error) {
 	var analyze PicAnalyze
-	return pc.UploadBase(userid, filename, "", analyze)
+	return pc.UploadBase(filename, "", analyze)
 }
 
-func (pc *PicCloud) UploadWithFileid(userid string, filename string, fileid string) (UrlInfo, error) {
+func (pc *PicCloud) UploadWithFileid(filename string, fileid string) (UrlInfo, error) {
 	var analyze PicAnalyze
-	return pc.UploadBase(userid, filename, fileid, analyze)
+	return pc.UploadBase(filename, fileid, analyze)
 }
 
-func (pc *PicCloud) UploadBase(userid string, filename string, fileid string, analyze PicAnalyze) (info UrlInfo, err error) {
+func (pc *PicCloud) UploadBase(filename string, fileid string, analyze PicAnalyze) (info UrlInfo, err error) {
 	if "" == filename {
 		err = errors.New("invliad filename")
 		return
 	}
 
-	reqUrl := pc.getUrl(userid, fileid)
+	reqUrl := pc.getUrl("0", fileid)
 	boundary := "-------------------------abcdefg1234567"
 	expire := uint(3600)
 
@@ -154,7 +156,7 @@ func (pc *PicCloud) UploadBase(userid string, filename string, fileid string, an
 		reqUrl += "?analyze="+strings.TrimRight(queryString, ".")
 	}
 
-	sign, err := sign.AppSignV2(pc.Appid, pc.SecretId, pc.SecretKey, pc.Bucket, expire, userid)
+	sign, err := sign.AppSignV2(pc.Appid, pc.SecretId, pc.SecretKey, pc.Bucket, expire)
 	if nil != err {
 		return
 	}
@@ -220,14 +222,14 @@ func (pc *PicCloud) UploadBase(userid string, filename string, fileid string, an
 	return
 }
 
-func (pc *PicCloud) Download(userid string, fileid string, filename string) error {
-	reqUrl := pc.getDownloadUrl(userid, fileid)
+func (pc *PicCloud) Download(fileid string, filename string) error {
+	reqUrl := pc.getDownloadUrl("0", fileid)
 	return pc.DownloadByUrl(reqUrl, filename)
 }
 
-func (pc *PicCloud) DownloadWithSign(userid string, fileid string, filename string) error {
-	reqUrl := pc.getDownloadUrl(userid, fileid)
-	sign, err := sign.AppSignOnceV2(pc.Appid, pc.SecretId, pc.SecretKey, pc.Bucket, userid, fileid)
+func (pc *PicCloud) DownloadWithSign(fileid string, filename string) error {
+	reqUrl := pc.getDownloadUrl("0", fileid)
+	sign, err := sign.AppSignOnceV2(pc.Appid, pc.SecretId, pc.SecretKey, pc.Bucket, fileid)
 	if nil != err {
 		return err
 	}
@@ -268,8 +270,8 @@ func (pc *PicCloud) DownloadByUrl(url string, filename string) error {
 	return nil
 }
 
-func (pc *PicCloud) Stat(userid string, fileid string) (info PicInfo, err error) {
-	reqUrl := pc.getUrl(userid, fileid)
+func (pc *PicCloud) Stat(fileid string) (info PicInfo, err error) {
+	reqUrl := pc.getUrl("0", fileid)
 	req, err := http.NewRequest("GET", reqUrl, nil)
 	if nil != err {
 		return
@@ -315,9 +317,9 @@ func (pc *PicCloud) Stat(userid string, fileid string) (info PicInfo, err error)
 	return
 }
 
-func (pc *PicCloud) Copy(userid string, fileid string) (info UrlInfo, err error) {
-	reqUrl := pc.getUrl(userid, fileid) + "/copy"
-	sign, err := sign.AppSignOnceV2(pc.Appid, pc.SecretId, pc.SecretKey, pc.Bucket, userid, fileid)
+func (pc *PicCloud) Copy(fileid string) (info UrlInfo, err error) {
+	reqUrl := pc.getUrl("0", fileid) + "/copy"
+	sign, err := sign.AppSignOnceV2(pc.Appid, pc.SecretId, pc.SecretKey, pc.Bucket, fileid)
 	if nil != err {
 		return
 	}
@@ -359,9 +361,9 @@ func (pc *PicCloud) Copy(userid string, fileid string) (info UrlInfo, err error)
 	return
 }
 
-func (pc *PicCloud) Delete(userid string, fileid string) error {
-	reqUrl := pc.getUrl(userid, fileid) + "/del"
-	sign, err := sign.AppSignOnceV2(pc.Appid, pc.SecretId, pc.SecretKey, pc.Bucket, userid, fileid)
+func (pc *PicCloud) Delete(fileid string) error {
+	reqUrl := pc.getUrl("0", fileid) + "/del"
+	sign, err := sign.AppSignOnceV2(pc.Appid, pc.SecretId, pc.SecretKey, pc.Bucket, fileid)
 	if nil != err {
 		return err
 	}
@@ -399,25 +401,22 @@ func (pc *PicCloud) Delete(userid string, fileid string) error {
 	return nil
 }
 
-func (pc *PicCloud) Sign(userid string, expire uint) (string, error) {
-	return sign.AppSignV2(pc.Appid, pc.SecretId, pc.SecretKey, pc.Bucket, expire, userid)
+func (pc *PicCloud) Sign(expire uint) (string, error) {
+	return sign.AppSignV2(pc.Appid, pc.SecretId, pc.SecretKey, pc.Bucket, expire)
 }
 
-func (pc *PicCloud) SignOnce(userid string, fileid string) (string, error) {
-	return sign.AppSignOnceV2(pc.Appid, pc.SecretId, pc.SecretKey, pc.Bucket, userid, fileid)
+func (pc *PicCloud) SignOnce(fileid string) (string, error) {
+	return sign.AppSignOnceV2(pc.Appid, pc.SecretId, pc.SecretKey, pc.Bucket, fileid)
 }
 
-func (pc *PicCloud) CheckSign(userid string, picSign string, fileid string) error {
+func (pc *PicCloud) CheckSign(picSign string, fileid string) error {
 	if "" == picSign {
 		return errors.New("empty sign")
 	}
 	
-	uid, expire, fid, _, err := sign.Decode(picSign, pc.Appid, pc.SecretId, pc.SecretKey)
+	expire, fid, _, err := sign.Decode(picSign, pc.Appid, pc.SecretId, pc.SecretKey)
 	if nil != err {
 		return err
-	}else if uid != userid {
-		desc := fmt.Sprintf("userid conflict, userid=%s, userid in sign=%s", userid, uid)
-		return errors.New(desc)
 	}
 	//check time
 	if expire != 0 {
