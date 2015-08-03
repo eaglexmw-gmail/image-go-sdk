@@ -14,6 +14,7 @@ import (
 	"io/ioutil"
 	"mime/multipart"
 	"net/http"
+	"net/url"
 	"os"
 	"strconv"
 	"strings"
@@ -22,7 +23,7 @@ import (
 	"github.com/tencentyun/go-sdk/sign"
 )
 
-const QCLOUD_VERSION = "2.0.0"
+const QCLOUD_VERSION = "2.0.1"
 const QCLOUD_DOMAIN = "image.myqcloud.com"
 
 type PicCloud struct {
@@ -79,22 +80,24 @@ func (pi *PicInfo) Print() {
 	fmt.Printf("height = %d\n", pi.Height)
 }
 
-func (pc *PicCloud) getUrl(userid string, fileid string) (url string) {
+func (pc *PicCloud) getUrl(userid string, fileid string) string {
+	var req_url string
 	//check version
 	if "" == pc.Bucket {
 		//v1
 		//url = fmt.Sprintf("http://eleme.image.myqcloud.com/photos/v1/%d/%s", pc.Appid, userid)
-		url = fmt.Sprintf("http://web.%s/photos/v1/%d/%s", QCLOUD_DOMAIN, pc.Appid, userid)
+		req_url = fmt.Sprintf("http://web.%s/photos/v1/%d/%s", QCLOUD_DOMAIN, pc.Appid, userid)
 	}else {
 		//v2
-		//url = fmt.Sprintf("http://eleme.image.myqcloud.com/photos/v2/%d/%s/%s", pc.Appid, pc.Bucket, userid)
-		url = fmt.Sprintf("http://web.%s/photos/v2/%d/%s/%s", QCLOUD_DOMAIN, pc.Appid, pc.Bucket, userid)
+		//req_url = fmt.Sprintf("http://eleme.image.myqcloud.com/photos/v2/%d/%s/%s", pc.Appid, pc.Bucket, userid)
+		req_url = fmt.Sprintf("http://web.%s/photos/v2/%d/%s/%s", QCLOUD_DOMAIN, pc.Appid, pc.Bucket, userid)
 	}
 
 	if "" != fileid {
-		url += "/"+fileid
+		req_url += "/"+url.QueryEscape(fileid)
 	}
-	return 
+
+	return req_url
 }
 
 func (pc *PicCloud) getDownloadUrl(userid string, fileid string) string {
@@ -156,6 +159,8 @@ func (pc *PicCloud) UploadBase(filename string, fileid string, analyze PicAnalyz
 		reqUrl += "?analyze="+strings.TrimRight(queryString, ".")
 	}
 
+	fmt.Println(reqUrl)
+
 	sign, err := sign.AppSignV2(pc.Appid, pc.SecretId, pc.SecretKey, pc.Bucket, expire)
 	if nil != err {
 		return
@@ -178,7 +183,8 @@ func (pc *PicCloud) UploadBase(filename string, fileid string, analyze PicAnalyz
 	}
 	bodyWriter.Close()
 
-	req, err := http.NewRequest("POST", reqUrl, bodyBuf)
+	//req, err := http.NewRequest("POST", reqUrl, bodyBuf)
+	req, err := http.NewRequest("POST", "http://web."+QCLOUD_DOMAIN, bodyBuf)
 	if nil != err {
 		return
 	}
@@ -186,6 +192,7 @@ func (pc *PicCloud) UploadBase(filename string, fileid string, analyze PicAnalyz
 	req.Header.Set("user-agent", "qcloud-go-sdk")
 	req.Header.Set("Authorization", "QCloud "+sign)
 	req.Header.Set("Content-Type", "multipart/form-data; boundary="+boundary)
+	req.URL.Opaque = strings.TrimPrefix(reqUrl, "http://web."+QCLOUD_DOMAIN)
 
 	var client http.Client
 	resp, err := client.Do(req)
@@ -222,22 +229,7 @@ func (pc *PicCloud) UploadBase(filename string, fileid string, analyze PicAnalyz
 	return
 }
 
-func (pc *PicCloud) Download(fileid string, filename string) error {
-	reqUrl := pc.getDownloadUrl("0", fileid)
-	return pc.DownloadByUrl(reqUrl, filename)
-}
-
-func (pc *PicCloud) DownloadWithSign(fileid string, filename string) error {
-	reqUrl := pc.getDownloadUrl("0", fileid)
-	sign, err := sign.AppSignOnceV2(pc.Appid, pc.SecretId, pc.SecretKey, pc.Bucket, fileid)
-	if nil != err {
-		return err
-	}
-
-	return pc.DownloadByUrl(reqUrl+"?sign="+sign, filename)
-}
-
-func (pc *PicCloud) DownloadByUrl(url string, filename string) error {
+func (pc *PicCloud) Download(url string, filename string) error {
 	if "" == url || "" == filename {
 		return errors.New("invalid param")
 	}
@@ -272,12 +264,14 @@ func (pc *PicCloud) DownloadByUrl(url string, filename string) error {
 
 func (pc *PicCloud) Stat(fileid string) (info PicInfo, err error) {
 	reqUrl := pc.getUrl("0", fileid)
-	req, err := http.NewRequest("GET", reqUrl, nil)
+	//req, err := http.NewRequest("GET", reqUrl, nil)
+	req, err := http.NewRequest("GET", "http://web."+QCLOUD_DOMAIN, nil)
 	if nil != err {
 		return
 	}
 	req.Header.Set("HOST", "web.image.myqcloud.com")
 	req.Header.Set("user-agent", "qcloud-go-sdk")
+	req.URL.Opaque = strings.TrimPrefix(reqUrl, "http://web."+QCLOUD_DOMAIN)
 
 	var client http.Client
 	resp, err := client.Do(req)
@@ -324,13 +318,15 @@ func (pc *PicCloud) Copy(fileid string) (info UrlInfo, err error) {
 		return
 	}
 
-	req, err := http.NewRequest("POST", reqUrl, nil)
+	//req, err := http.NewRequest("POST", reqUrl, nil)
+	req, err := http.NewRequest("POST", "http://web."+QCLOUD_DOMAIN, nil)
 	if nil != err {
 		return
 	}
 	req.Header.Set("HOST", "web.image.myqcloud.com")
 	req.Header.Set("user-agent", "qcloud-go-sdk")
 	req.Header.Set("Authorization", "QCloud "+sign)
+	req.URL.Opaque = strings.TrimPrefix(reqUrl, "http://web."+QCLOUD_DOMAIN)
 
 	var client http.Client
 	resp, err := client.Do(req)
@@ -368,13 +364,15 @@ func (pc *PicCloud) Delete(fileid string) error {
 		return err
 	}
 
-	req, err := http.NewRequest("POST", reqUrl, nil)
+	//req, err := http.NewRequest("POST", reqUrl, nil)
+	req, err := http.NewRequest("POST", "http://web."+QCLOUD_DOMAIN, nil)
 	if nil != err {
 		return err
 	}
 	req.Header.Set("HOST", "web.image.myqcloud.com")
 	req.Header.Set("user-agent", "qcloud-go-sdk")
 	req.Header.Set("Authorization", "QCloud "+sign)
+	req.URL.Opaque = strings.TrimPrefix(reqUrl, "http://web."+QCLOUD_DOMAIN)
 
 	var client http.Client
 	resp, err := client.Do(req)

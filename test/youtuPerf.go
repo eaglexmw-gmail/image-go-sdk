@@ -19,9 +19,9 @@ const sid = "AKIDOXkiS878nYFvc4sggDRxTU56UsmN3LMy"
 const skey = "gMoR2lGvMWzxFGrxJCRoZMhU48f0tsdm"
 
 var picArray = [3]string{
-	"./test.jpg",
-	"./food.jpg",
-	"./fuzzy.jpg",
+	"./pic/test.jpg",
+	"./pic/food.jpg",
+	"./pic/fuzzy.jpg",
 }
 
 func main() {
@@ -85,7 +85,7 @@ func pic_test(pic string) (t int64, err error) {
 	analyze.Food = 1;
 	//is fuzzy? is food?
 	start := time.Now().UnixNano()
-	_, err = cloud.UploadBase("123456", pic, "", analyze)
+	_, err = cloud.UploadBase(pic, "", analyze)
 	if err != nil {
 		t = 0
 		return

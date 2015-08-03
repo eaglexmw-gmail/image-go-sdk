@@ -30,7 +30,7 @@ func pic_test(){
 		info.Print()
 	}
 
-	cloud := qcloud.PicCloud{appid, sid, skey, ""}
+	fmt.Println("=========================================")
 	picInfo, err := cloud.Stat(info.Fileid)
 	if err != nil {
 		fmt.Printf("pic stat failed, err = %s\n", err.Error())
@@ -49,7 +49,7 @@ func pic_test(){
 	}
 
 	fmt.Println("=========================================")
-	err = cloud.Download(info2.Fileid, "./pic/test2.jpg")
+	err = cloud.Download(info.DownloadUrl, "./pic/test2.jpg")
 	if err != nil {
 		fmt.Printf("pic download failed, err = %s\n", err.Error())
 	} else {
@@ -57,7 +57,7 @@ func pic_test(){
 	}
 
 	fmt.Println("=========================================")
-	err = cloud.Delete(info.Fileid)
+	err = cloud.Delete(info2.Fileid)
 	if err != nil {
 		fmt.Printf("pic delete failed, err = %s\n", err.Error())
 	} else {

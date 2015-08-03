@@ -19,10 +19,10 @@ func pic_test(){
 	sid := "AKIDNZwDVhbRtdGkMZQfWgl2Gnn1dhXs95C0"
 	skey := "ZDdyyRLCLv1TkeYOl5OCMLbyH4sJ40wp"
 	bucket := "testa"
-	
+
 	cloud := qcloud.PicCloud{appid, sid, skey, bucket}
 	fmt.Println("=========================================")
-	info, err := cloud.Upload("./pic/test.jpg")
+	info, err := cloud.UploadWithFileid("./pic/test.jpg", "d4b/123re")
 	if err != nil {
 		fmt.Printf("pic upload failed, err = %s\n", err.Error())
 	} else {
@@ -49,7 +49,7 @@ func pic_test(){
 	}
 
 	fmt.Println("=========================================")
-	err = cloud.Download(info2.Fileid, "./pic/test2.jpg")
+	err = cloud.Download(info.DownloadUrl, "./pic/test2.jpg")
 	if err != nil {
 		fmt.Printf("pic download failed, err = %s\n", err.Error())
 	} else {
@@ -57,14 +57,12 @@ func pic_test(){
 	}
 
 	fmt.Println("=========================================")
-	/*
-	err = cloud.Delete(info.Fileid)
+	err = cloud.Delete(info2.Fileid)
 	if err != nil {
 		fmt.Printf("pic delete failed, err = %s\n", err.Error())
 	} else {
 		fmt.Println("pic delete success")
 	}
-	*/
 	
 	fmt.Println("=========================================")
 	sign, _ := cloud.Sign(3600*24*7)

@@ -6,6 +6,10 @@ go sdk for picture cloud service of tencentyun.
 
 版本信息
 ----------------------------------- 
+### v2.0.1
+对fileid进行urlencode，支持slash
+slash能力需要后台服务支持
+
 ### v2.0.0
 支持2.0版本的图片restful api。内部实现了高度封装，对开发者透明。
 
