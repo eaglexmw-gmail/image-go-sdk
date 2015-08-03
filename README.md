@@ -124,24 +124,24 @@ How to start
 如果需要上传图片，根据不同的需求，可以选择不同的上传方法
 			
 	//pic_info是上传的返回结果
-	//最简单的上传接口，提供userid和图片路径即可
-	pic_info, err := cloud.upload(userid, filepath)
+	//最简单的上传接口，提供图片路径即可
+	pic_info, err := cloud.upload(filepath)
 	//可以自定义fileid的上传接口
-	pic_info, err := cloud.uploadWithFileid(userid, filepath, fileid)
+	pic_info, err := cloud.uploadWithFileid(filepath, fileid)
 如果需要上传视频
 		
-	video_info, err := cloud.upload(userid, filepath)
+	video_info, err := cloud.upload(filepath)
 
 #### 复制图片
 		
-	info, err := cloud.Copy(userid, fileid)
+	info, err := cloud.Copy(fileid)
 	
 #### 查询图片(视频)
 		
 	//图片查询
-	pic_info, err := cloud.Stat(userid, fileid)
+	pic_info, err := cloud.Stat(fileid)
 	//视频查询
-	video_info, err := cloud.Stat(userid, fileid)
+	video_info, err := cloud.Stat(fileid)
 
 #### 删除图片(视频)
 		
@@ -151,12 +151,7 @@ How to start
 下载图片直接利用图片的下载url即可，开发者可以自行处理，这里提供的是本地下载的方法。
 如果开启了防盗链，还需要在下载url后面追加签名，如果要自行处理，请参考腾讯云的wiki页，熟悉鉴权签名的算法。
 		
-	//filename是要保存的文件路径	
-	//不开启防盗链
-	err = cloud.Download(userid, fileid, filepath)
-	//开启防盗链
-    	err = cloud.DownloadWithSign(userid, fileid, filepath)
-	//直接提供url下载
+	//直接根据url下载
 	err = cloud.DownloadByUrl(url, filepath)
 
 ### demo示例
