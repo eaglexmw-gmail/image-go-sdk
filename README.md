@@ -152,7 +152,7 @@ How to start
 如果开启了防盗链，还需要在下载url后面追加签名，如果要自行处理，请参考腾讯云的wiki页，熟悉鉴权签名的算法。
 		
 	//直接根据url下载
-	err = cloud.DownloadByUrl(url, filepath)
+	err = cloud.Download(url, filepath)
 
 ### demo示例
 请阅读test/demo.go示例
