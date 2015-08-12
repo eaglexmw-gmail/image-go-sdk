@@ -125,12 +125,12 @@ How to start
 			
 	//pic_info是上传的返回结果
 	//最简单的上传接口，提供图片路径即可
-	pic_info, err := cloud.upload(filepath)
+	pic_info, err := cloud.Upload(filepath)
 	//可以自定义fileid的上传接口
-	pic_info, err := cloud.uploadWithFileid(filepath, fileid)
+	pic_info, err := cloud.UploadWithFileid(filepath, fileid)
 如果需要上传视频
 		
-	video_info, err := cloud.upload(filepath)
+	video_info, err := cloud.Upload(filepath)
 
 #### 复制图片
 		
