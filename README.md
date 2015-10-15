@@ -4,35 +4,6 @@ qcloud-go-sdk
 ----------------------------------- 
 go sdk for picture cloud service of tencentyun.
 
-版本信息
------------------------------------ 
-### v2.0.1
-对fileid进行urlencode，支持slash
-slash能力需要后台服务支持
-
-### v2.0.0
-支持2.0版本的图片restful api。内部实现了高度封装，对开发者透明。
-
-### v1.2.1
-new features:
-增加上传图片的模糊识别和美食识别功能接口
-
-### v1.2.0
-new features:
-增加视频上传、查询、删除功能
-
-### v1.1.0
-new features:
-增加本地签名生成和校验的函数
-
-### v1.0.1
-调整github上的包结构
-调整代码规范
-
-### v1.0.0
-稳定版本，支持图片云的基本api。
-包括图片的上传、下载、复制、查询和删除。
-
 安装
 ----------------------------------- 
 		
@@ -62,31 +33,15 @@ new features:
 			Height      uint	//图片高度
 		}
 
-###VideoUrlInfo
-上传和复制api返回的图片资源链接信息
-		
-		type VideoUrlInfo struct {
-			Url          string	//视频的资源url
-			DownloadUrl  string	//视频的下载url
-			Fileid       string	//视频资源的唯一标识
-			Fileid       string	//视频资源的封面url，只有使用视频转码的业务才会有封面 
-		}
+###PornDetectInfo
+黄图识别的结果信息
 
-###VideoInfo
-视频本身的属性信息，可以通过查询api获得
-		
-		type VideoInfo struct {
-			Url         string	//视频的下载url 
-			Fileid      string	//视频资源的唯一标识 
-			UploadTime  uint	//视频上传时间，unix时间戳 
-			Size        uint	//视频大小，单位byte
-			Sha         string	//视频的sha1摘要 
-			Status      uint	//视频状态码，0-初始化, 1-转码中, 2-转码结束,3-转码失败,4-未审核,5-审核通过,6-审核未通过,7-审核失败 
-			StatusMsg	string	//视频状态字符串 
-			PlayTime	uint	//视频视频播放时长,只有使用视频转码的业务才有 
-			Title		string	//视频标题 
-			Desc		string	//视频描述 
-			CoverUrl	string	//视频封面url,只有使用视频转码的业务才会有封面 
+		type PornDetectInfo struct {
+			Result      int		//识别结果。0，正常；1，黄图；2，可疑图片，需要人工审核
+			Confidence  float64 //图片识别的置信度
+			PornScore   float64 //色情图片的识别评分
+			NormalScore float64 //正常图片的识别评分
+			HotScore    float64	//性感图片的识别评分
 		}
 		
 How to start
@@ -110,9 +65,6 @@ How to start
 	cloud := qcloud.PicCloud{appid, sid, skey, ""}
 	//v2版本
 	cloud := qcloud.PicCloud{appid, sid, skey, bucket}
-如果要使用视频，需要创建视频操作类对象
-		
-	cloud := qcloud.VideoCloud{appid, sid, skey}
 
 ### 4. 调用对应的方法
 在创建完对象后，根据实际需求，调用对应的操作方法就可以了。sdk提供的方法包括：签名计算、上传、复制、查询、下载和删除等。
@@ -125,36 +77,63 @@ How to start
 			
 	//pic_info是上传的返回结果
 	//最简单的上传接口，提供图片路径即可
-	pic_info, err := cloud.Upload(filepath)
-	//可以自定义fileid的上传接口
-	pic_info, err := cloud.UploadWithFileid(filepath, fileid)
-如果需要上传视频
-		
-	video_info, err := cloud.Upload(filepath)
+	pic_info, err := cloud.UploadFile(filepath)
+	//支持自定义fileid的上传文件接口
+	pic_info, err := cloud.UploadFileWithFileid(filepath, fileid)
+	//使用字节数组[]byte的上传接口
+	pic_info, err := cloud.Upload(picData)
+	//使用字节数组[]byte且自定义fileid的上传接口
+	pic_info, err := cloud.UploadWithFileid(picData, fileid)
 
 #### 复制图片
 		
 	info, err := cloud.Copy(fileid)
 	
-#### 查询图片(视频)
+#### 查询图片
 		
-	//图片查询
 	pic_info, err := cloud.Stat(fileid)
-	//视频查询
-	video_info, err := cloud.Stat(fileid)
 
-#### 删除图片(视频)
+#### 删除图片
 		
 	err = cloud.Delete(userid, fileid)
 	
 #### 下载图片
-下载图片直接利用图片的下载url即可，开发者可以自行处理，这里提供的是本地下载的方法。
+下载图片直接利用图片的下载url即可，开发者可以自行处理。
 如果开启了防盗链，还需要在下载url后面追加签名，如果要自行处理，请参考腾讯云的wiki页，熟悉鉴权签名的算法。
-		
-	//直接根据url下载
-	err = cloud.Download(url, filepath)
 
 ### demo示例
 请阅读test/demo.go示例
 对于v2版本的图片api，请参考demoV2.go
 	
+版本信息
+----------------------------------- 
+### v2.0.2
+增加对黄图识别api的支持。
+
+### v2.0.1
+对fileid进行urlencode，支持slash
+slash能力需要后台服务支持
+
+### v2.0.0
+支持2.0版本的图片restful api。内部实现了高度封装，对开发者透明。
+
+### v1.2.1
+new features:
+增加上传图片的模糊识别和美食识别功能接口
+
+### v1.2.0
+new features:
+增加视频上传、查询、删除功能
+
+### v1.1.0
+new features:
+增加本地签名生成和校验的函数
+
+### v1.0.1
+调整github上的包结构
+调整代码规范
+
+### v1.0.0
+稳定版本，支持图片云的基本api。
+包括图片的上传、下载、复制、查询和删除。
+

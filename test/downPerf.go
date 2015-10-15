@@ -6,13 +6,13 @@
 package main
 
 import (
-	"os"
-	"fmt"
-	"time"
 	"bufio"
-	"strconv"
+	"fmt"
 	"math/rand"
 	"net/http"
+	"os"
+	"strconv"
+	"time"
 )
 
 func main() {
@@ -31,28 +31,28 @@ func main() {
 	urlArray, _ := readUrl(os.Args[1])
 
 	chs := make([]chan int64, tcnt)
-	for i, _ := range(chs) {
+	for i, _ := range chs {
 		chs[i] = make(chan int64)
 		go do(urlArray, round, chs[i])
 	}
 
 	isLast := false
 	for {
-		for _, ch := range(chs) {
+		for _, ch := range chs {
 			t := <-ch
 			if t == 0 {
-				failed ++
-			}else if t < 0 {
+				failed++
+			} else if t < 0 {
 				isLast = true
 				break
-			}else{
+			} else {
 				timeTotal += t
 				timeCnt++
 			}
 		}
-		fmt.Printf("total time=%dms cnt=%d failed=%d average=%fs\r\n", 
-					timeTotal, timeCnt, failed, float32(timeTotal)/float32(timeCnt) / 1000)
-	
+		fmt.Printf("total time=%dms cnt=%d failed=%d average=%fs\r\n",
+			timeTotal, timeCnt, failed, float32(timeTotal)/float32(timeCnt)/1000)
+
 		if isLast {
 			break
 		}
@@ -62,29 +62,28 @@ func main() {
 func readUrl(file string) (urlArray []string, err error) {
 	f, err := os.Open(file)
 	if err == nil {
-		return 
+		return
 	}
 	defer f.Close()
 
 	urlArray = make([]string, 0)
 	bfRd := bufio.NewReader(f)
-	delim := '\n'
 	for {
-		line, err := bfRd.ReadString(delim)
+		line, err := bfRd.ReadString('\n')
 		if err != nil {
 			break
 		}
-		append(urlArray, line)
+		urlArray = append(urlArray, line)
 		fmt.Println("read line, ", line)
 	}
 	err = nil
 	return
 }
 
-func do(urlArray []string, round int, ch chan int64){
+func do(urlArray []string, round int, ch chan int64) {
 	r := rand.New(rand.NewSource(time.Now().Unix()))
 	for i := 0; i < round; i++ {
-		url := urlArray[r.Int31n(len(urlArray))]
+		url := urlArray[r.Int31n(int32(len(urlArray)))]
 		fmt.Println("new test ", url)
 		t, _ := get_pic(url)
 		ch <- t
@@ -98,13 +97,10 @@ func get_pic(url string) (t int64, err error) {
 	res, err := http.Get(url)
 	defer res.Body.Close()
 	if err != nil {
-		return 
+		return
 	}
-	var data string
-	data = string(res.Body)
 	end := time.Now().UnixNano()
 	t = (end - start) / 1000000
 	err = nil
 	return
 }
-

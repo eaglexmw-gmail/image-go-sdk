@@ -8,21 +8,19 @@ package main
 import (
 	"fmt"
 	"github.com/tencentyun/go-sdk"
+	"io/ioutil"
+	"os"
 )
 
 func main() {
-	pic_test()
-}
-
-func pic_test(){
 	var appid uint = 10000001
 	sid := "AKIDNZwDVhbRtdGkMZQfWgl2Gnn1dhXs95C0"
 	skey := "ZDdyyRLCLv1TkeYOl5OCMLbyH4sJ40wp"
-	bucket := "testa"
+	bucket := "testb"
 
 	cloud := qcloud.PicCloud{appid, sid, skey, bucket}
 	fmt.Println("=========================================")
-	info, err := cloud.UploadWithFileid("./pic/test.jpg", "d4b/123re")
+	info, err := cloud.UploadFile("./pic/test.jpg")
 	if err != nil {
 		fmt.Printf("pic upload failed, err = %s\n", err.Error())
 	} else {
@@ -49,33 +47,37 @@ func pic_test(){
 	}
 
 	fmt.Println("=========================================")
-	err = cloud.Download(info.DownloadUrl, "./pic/test2.jpg")
-	if err != nil {
-		fmt.Printf("pic download failed, err = %s\n", err.Error())
-	} else {
-		fmt.Println("pic download success")
-	}
-
-	fmt.Println("=========================================")
 	err = cloud.Delete(info2.Fileid)
 	if err != nil {
 		fmt.Printf("pic delete failed, err = %s\n", err.Error())
 	} else {
 		fmt.Println("pic delete success")
 	}
-	
+
 	fmt.Println("=========================================")
-	sign, _ := cloud.Sign(3600*24*7)
+	url := "http://b.hiphotos.baidu.com/image/pic/item/8ad4b31c8701a18b1efd50a89a2f07082938fec7.jpg"
+	sign, _ := cloud.Sign(3600 * 24 * 7)
 	fmt.Printf("gen sign with expire time, sign = %s\n", sign)
 	sign, _ = cloud.SignOnce(info.Fileid)
 	fmt.Printf("gen sign with fileid, sign = %s\n", sign)
+	sign, _ = cloud.ProcessSign(3600*24, url)
+	fmt.Printf("gen process sign, sign = %s\n", sign)
 
 	fmt.Println("=========================================")
+	fi, err := os.Open("./pic/test.jpg")
+	if nil != err {
+		return
+	}
+	defer fi.Close()
+	picData, err := ioutil.ReadAll(fi)
+	if nil != err {
+		return
+	}
 	var analyze qcloud.PicAnalyze
-	analyze.Fuzzy = 1;
-	analyze.Food = 1;
+	analyze.Fuzzy = 1
+	analyze.Food = 1
 	//is fuzzy? is food?
-	info, err = cloud.UploadBase("./pic/fuzzy.jpg", "", analyze)
+	info, err = cloud.UploadBase(picData, "", analyze)
 	if err != nil {
 		fmt.Printf("pic analyze failed, err = %s\n", err.Error())
 	} else {
@@ -83,5 +85,13 @@ func pic_test(){
 		fmt.Printf("is fuzzy : %d\r\n", info.Analyze.Fuzzy)
 		fmt.Printf("is food : %d\r\n", info.Analyze.Food)
 	}
-}
 
+	fmt.Println("=========================================")
+	detectInfo, err := cloud.PornDetect(url)
+	if err != nil {
+		fmt.Printf("porn detect failed, err = %s\n", err.Error())
+	} else {
+		fmt.Printf("porn detect success\n")
+		detectInfo.Print()
+	}
+}

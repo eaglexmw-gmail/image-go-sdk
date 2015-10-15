@@ -5,18 +5,18 @@
 package main
 
 import (
-	"os"
 	"fmt"
-	"strings"
-	"io/ioutil"
-	"path/filepath"
 	"github.com/tencentyun/go-sdk"
+	"io/ioutil"
+	"os"
+	"path/filepath"
+	"strings"
 )
 
 func ListDir(dirPath string, suffix string) (files []string, err error) {
 	files = make([]string, 0, 32)
 	suffix = strings.ToUpper(suffix)
-	
+
 	dir, err := ioutil.ReadDir(dirPath)
 	if err != nil {
 		return nil, err
@@ -59,12 +59,11 @@ func WalkDir(dirPath string, suffix string) (files []string, err error) {
 	return files, err
 }
 
-
 const appid uint = 200943
 const sid = "AKIDOXkiS878nYFvc4sggDRxTU56UsmN3LMy"
 const skey = "gMoR2lGvMWzxFGrxJCRoZMhU48f0tsdm"
 
-func main(){
+func main() {
 	if len(os.Args) < 3 {
 		fmt.Println("usage : analyze [dirpath] [suffix]")
 		return
@@ -89,9 +88,19 @@ func main(){
 	for _, pic := range pics {
 		fmt.Printf("analyze pic = %s\r\n", pic)
 		total += 1
-		
-		for i:=0; i<3; i++ {
-			info, err := cloud.UploadBase("123456", pic, "", analyze)
+
+		fi, err := os.Open(pic)
+		if nil != err {
+			return
+		}
+		defer fi.Close()
+		picData, err := ioutil.ReadAll(fi)
+		if nil != err {
+			return
+		}
+
+		for i := 0; i < 3; i++ {
+			info, err := cloud.UploadBase(picData, "", analyze)
 			if err != nil {
 				fmt.Printf("err = %s\r\n", err.Error())
 				continue
@@ -100,16 +109,14 @@ func main(){
 				fmt.Println("this pic is fuzzy")
 				fuzzy += 1
 				break
-			}else{
+			} else {
 				fmt.Println("this pic is not fuzzy")
 				notfuzzy += 1
 				break
 			}
 		}
 	}
-	
+
 	fmt.Println("====================================")
 	fmt.Printf("total=%d fuzzy=%d notfuzzy=%d\r\n", total, fuzzy, notfuzzy)
 }
-
-

@@ -11,8 +11,8 @@ package qcloud
 import (
 	"fmt"
 	"math/rand"
-	"time"
 	"testing"
+	"time"
 )
 
 const APPID_V1 = 200943
@@ -22,12 +22,14 @@ const SKEY_V1 = "gMoR2lGvMWzxFGrxJCRoZMhU48f0tsdm"
 const APPID_V2 = 10000001
 const SID_V2 = "AKIDNZwDVhbRtdGkMZQfWgl2Gnn1dhXs95C0"
 const SKEY_V2 = "ZDdyyRLCLv1TkeYOl5OCMLbyH4sJ40wp"
-const BUCKET = "testa"
+const BUCKET = "testb"
+
+const TEST_URL = "http://b.hiphotos.baidu.com/image/pic/item/8ad4b31c8701a18b1efd50a89a2f07082938fec7.jpg"
 
 func TestUpload(t *testing.T) {
 	fileName := "./test/pic/test.jpg"
 	cloud := PicCloud{APPID_V1, SID_V1, SKEY_V1, ""}
-	info, err := cloud.Upload(fileName)
+	info, err := cloud.UploadFile(fileName)
 	if err != nil {
 		t.Errorf("pic upload failed, pic=%s, err=%s\n", fileName, err.Error())
 	} else {
@@ -43,10 +45,9 @@ func TestUpload(t *testing.T) {
 func TestUploadWithFileId(t *testing.T) {
 	fileName := "./test/pic/test.jpg"
 	cloud := PicCloud{APPID_V1, SID_V1, SKEY_V1, ""}
-	var analyze PicAnalyze
 	r := rand.New(rand.NewSource(time.Now().Unix()))
 	fileid := fmt.Sprintf("goodnight%d", r.Int63())
-	info, err := cloud.UploadBase(fileName, fileid, analyze)
+	info, err := cloud.UploadFileWithFileid(fileName, fileid)
 	if err != nil {
 		t.Errorf("pic upload failed, pic=%s, err=%s\n", fileName, err.Error())
 	} else {
@@ -62,7 +63,7 @@ func TestUploadWithFileId(t *testing.T) {
 func TestUploadV2(t *testing.T) {
 	fileName := "./test/pic/test.jpg"
 	cloud := PicCloud{APPID_V2, SID_V2, SKEY_V2, BUCKET}
-	info, err := cloud.Upload(fileName)
+	info, err := cloud.UploadFile(fileName)
 	if err != nil {
 		t.Errorf("pic upload failed, pic=%s, err=%s\n", fileName, err.Error())
 	} else {
@@ -78,10 +79,9 @@ func TestUploadV2(t *testing.T) {
 func TestUploadWithFileIdV2(t *testing.T) {
 	fileName := "./test/pic/test.jpg"
 	cloud := PicCloud{APPID_V2, SID_V2, SKEY_V2, BUCKET}
-	var analyze PicAnalyze
 	r := rand.New(rand.NewSource(time.Now().Unix()))
-	fileid := fmt.Sprintf("goodnight%d", r.Int63())
-	info, err := cloud.UploadBase(fileName, fileid, analyze)
+	fileid := fmt.Sprintf("good/night%d.jpg", r.Int63())
+	info, err := cloud.UploadFileWithFileid(fileName, fileid)
 	if err != nil {
 		t.Errorf("pic upload failed, pic=%s, err=%s\n", fileName, err.Error())
 	} else {
@@ -93,10 +93,21 @@ func TestUploadWithFileIdV2(t *testing.T) {
 		t.Errorf("pic info error\n")
 	}
 }
-		
+
+func TestPornDetect(t *testing.T) {
+	cloud := PicCloud{APPID_V2, SID_V2, SKEY_V2, BUCKET}
+	info, err := cloud.PornDetect(TEST_URL)
+	if nil != err {
+		t.Errorf("porn detect failed, err=%s\n", err.Error())
+	} else {
+		fmt.Printf("porn detect success\n")
+		info.Print()
+	}
+}
+
 func TestSign(t *testing.T) {
 	var expire uint = 3600
-	cloud := PicCloud{APPID_V1, SID_V1, SKEY_V1, ""}
+	cloud := PicCloud{APPID_V2, SID_V2, SKEY_V2, BUCKET}
 	sign, err := cloud.Sign(expire)
 	if nil != err {
 		t.Errorf("create sign fail, err=%s\n", err.Error())
@@ -107,12 +118,23 @@ func TestSign(t *testing.T) {
 
 func TestSignOnce(t *testing.T) {
 	fileid := "0fcfeeeb-461c-4693-913b-f32003de09a4"
-	cloud := PicCloud{APPID_V1, SID_V1, SKEY_V1, ""}
+	cloud := PicCloud{APPID_V2, SID_V2, SKEY_V2, BUCKET}
 	sign, err := cloud.SignOnce(fileid)
 	if nil != err {
 		t.Errorf("create sign fail, err=%s\n", err.Error())
 	} else {
 		fmt.Printf("create sign success, sign=%s\n", sign)
+	}
+}
+
+func TestProcessSign(t *testing.T) {
+	var expire uint = 3600
+	cloud := PicCloud{APPID_V2, SID_V2, SKEY_V2, BUCKET}
+	sign, err := cloud.ProcessSign(expire, TEST_URL)
+	if nil != err {
+		t.Errorf("create process sign fail, err=%s\n", err.Error())
+	} else {
+		fmt.Printf("create process sign success, sign=%s\n", sign)
 	}
 }
 
