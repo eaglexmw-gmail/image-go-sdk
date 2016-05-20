@@ -9,6 +9,7 @@ import (
 	"crypto/hmac"
 	"crypto/sha1"
 	"encoding/base64"
+	"net/url"
 	"errors"
 	"fmt"
 	"strconv"
@@ -16,7 +17,7 @@ import (
 	"time"
 )
 
-func ProcessSign(appid uint, secretId string, secretKey string, bucket string, expire uint, url string) (string, error) {
+func ProcessSign(appid uint, secretId string, secretKey string, bucket string, expire uint, urlstr string) (string, error) {
 	if "" == secretId || "" == secretKey {
 		return "", errors.New("invalid params, secret id or key is empty")
 	}
@@ -30,7 +31,7 @@ func ProcessSign(appid uint, secretId string, secretKey string, bucket string, e
 		secretId,
 		now,
 		expireTime,
-		url)
+		url.QueryEscape(urlstr))
 
 	//fmt.Println("sign=", plainStr)
 	cryptoStr := []byte(plainStr)
@@ -43,7 +44,7 @@ func ProcessSign(appid uint, secretId string, secretKey string, bucket string, e
 }
 
 // decode a sign
-func ProcessDecode(sign string, appid uint, secretId string, secretKey string) (url string, bucket string, e error) {
+func ProcessDecode(sign string, appid uint, secretId string, secretKey string) (urlstr string, bucket string, e error) {
 	if "" == sign {
 		e = errors.New("invalid sign string")
 		return
@@ -121,7 +122,8 @@ func ProcessDecode(sign string, appid uint, secretId string, secretKey string) (
 	}
 
 	//check url
-	url = strings.TrimLeft(fields[cnt], "l=")
+	enurl := strings.TrimLeft(fields[cnt], "l=")
+	urlstr, e = url.QueryUnescape(enurl)
 	e = nil
 	return
 }

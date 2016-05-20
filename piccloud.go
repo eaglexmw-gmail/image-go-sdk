@@ -441,8 +441,12 @@ func (pc *PicCloud) SignOnce(fileid string) (string, error) {
 	return sign.AppSignOnceV2(pc.Appid, pc.SecretId, pc.SecretKey, pc.Bucket, fileid)
 }
 
-func (pc *PicCloud) ProcessSign(expire uint, url string) (string, error) {
-	return sign.ProcessSign(pc.Appid, pc.SecretId, pc.SecretKey, pc.Bucket, expire, url)
+func (pc *PicCloud) ProcessSign(expire uint, urlstr string) (string, error) {
+	return sign.ProcessSign(pc.Appid, pc.SecretId, pc.SecretKey, pc.Bucket, expire, urlstr)
+}
+
+func (pc *PicCloud) ProcessDecode(signstr string) (string, string, error) {
+	return sign.ProcessDecode(signstr, pc.Appid, pc.SecretId, pc.SecretKey)
 }
 
 func (pc *PicCloud) CheckSign(picSign string, fileid string) error {
