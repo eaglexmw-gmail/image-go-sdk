@@ -24,8 +24,6 @@ const SID_V2 = "AKIDNZwDVhbRtdGkMZQfWgl2Gnn1dhXs95C0"
 const SKEY_V2 = "ZDdyyRLCLv1TkeYOl5OCMLbyH4sJ40wp"
 const BUCKET = "testb"
 
-const TEST_URL = "http://b.hiphotos.baidu.com/image/pic/item/8ad4b31c8701a18b1efd50a89a2f07082938fec7.jpg"
-
 func TestUpload(t *testing.T) {
 	fileName := "./test/pic/test.jpg"
 	cloud := PicCloud{APPID_V1, SID_V1, SKEY_V1, ""}
@@ -96,12 +94,46 @@ func TestUploadWithFileIdV2(t *testing.T) {
 
 func TestPornDetect(t *testing.T) {
 	cloud := PicCloud{APPID_V2, SID_V2, SKEY_V2, BUCKET}
-	info, err := cloud.PornDetect(TEST_URL)
+	pornUrl = "http://b.hiphotos.baidu.com/image/pic/item/8ad4b31c8701a18b1efd50a89a2f07082938fec7.jpg"
+	info, err := cloud.PornDetect(pornUrl)
 	if nil != err {
 		t.Errorf("porn detect failed, err=%s\n", err.Error())
 	} else {
 		fmt.Printf("porn detect success\n")
 		info.Print()
+	}
+}
+
+func TestPornDetectUrl(t *testing.T) {
+	cloud := PicCloud{APPID_V2, SID_V2, SKEY_V2, BUCKET}
+	pornUrl := []string{
+		"http://b.hiphotos.baidu.com/image/pic/item/8ad4b31c8701a18b1efd50a89a2f07082938fec7.jpg",
+        "http://c.hiphotos.baidu.com/image/h%3D200/sign=7b991b465eee3d6d3dc680cb73176d41/96dda144ad3459829813ed730bf431adcaef84b1.jpg",
+    }
+	pornUrlRes, err := cloud.PornDetectUrl(pornUrl)
+	if err != nil {
+		fmt.Printf("porn detect failed, err = %s\n", err.Error())
+	} else {
+		fmt.Printf("porn detect success\n")
+		fmt.Printf(pornUrlRes)
+		fmt.Printf("\n")
+	}
+}
+
+func TestPornDetectFile(t *testing.T) {
+	cloud := PicCloud{APPID_V2, SID_V2, SKEY_V2, BUCKET}
+	pornFile := []string{
+        "D:/porn/test1.jpg",
+        "D:/porn/test2.jpg",
+        "../../../../../porn/测试.png",
+    }
+	pornFileRes, err := cloud.PornDetectFile(pornFile)
+	if err != nil {
+		fmt.Printf("porn detect failed, err = %s\n", err.Error())
+	} else {
+		fmt.Printf("porn detect success\n")
+		fmt.Printf(pornFileRes)
+		fmt.Printf("\n")
 	}
 }
 
@@ -130,7 +162,7 @@ func TestSignOnce(t *testing.T) {
 func TestProcessSign(t *testing.T) {
 	var expire uint = 3600
 	cloud := PicCloud{APPID_V2, SID_V2, SKEY_V2, BUCKET}
-	sign, err := cloud.ProcessSign(expire, TEST_URL)
+	sign, err := cloud.ProcessSign(expire)
 	if nil != err {
 		t.Errorf("create process sign fail, err=%s\n", err.Error())
 	} else {

@@ -13,9 +13,9 @@ import (
 )
 
 func main() {
-	var appid uint = 200943
-	sid := "AKIDOXkiS878nYFvc4sggDRxTU56UsmN3LMy"
-	skey := "gMoR2lGvMWzxFGrxJCRoZMhU48f0tsdm"
+	var appid uint = 111
+	sid := "SECRET_ID"
+	skey := "SECRET_KEY"
 
 	cloud := qcloud.PicCloud{appid, sid, skey, ""}
 	fmt.Println("=========================================")

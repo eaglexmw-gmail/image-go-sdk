@@ -1,4 +1,5 @@
-qcloud-go-sdk
+# tencentyun/image-go-sdk
+腾讯云 [万象优图（Cloud Image）](https://www.qcloud.com/product/ci.html) SDK for Go
 ===================================
 简介
 ----------------------------------- 
@@ -37,11 +38,12 @@ go sdk for picture cloud service of tencentyun.
 黄图识别的结果信息
 
 		type PornDetectInfo struct {
-			Result      int		//识别结果。0，正常；1，黄图；2，可疑图片，需要人工审核
-			Confidence  float64 //图片识别的置信度
-			PornScore   float64 //色情图片的识别评分
-			NormalScore float64 //正常图片的识别评分
-			HotScore    float64	//性感图片的识别评分
+			Result      int		//供参考的识别结果，0正常，1黄图，2疑似图片
+			Confidence  float64 //识别为黄图的置信度，范围0-100；是normal_score, hot_score, porn_score的综合评分
+			PornScore   float64 //图片为色情图片的评分
+			NormalScore float64 //图片为正常图片的评分
+			HotScore    float64	//图片为性感图片的评分
+			ForbidStatus int    //封禁状态，0表示正常，1表示图片已被封禁（只有存储在万象优图的图片才会被封禁）
 		}
 		
 How to start
@@ -101,12 +103,35 @@ How to start
 下载图片直接利用图片的下载url即可，开发者可以自行处理。
 如果开启了防盗链，还需要在下载url后面追加签名，如果要自行处理，请参考腾讯云的wiki页，熟悉鉴权签名的算法。
 
+#### 黄图识别
+	//单图片Url鉴黄
+	url := "http://b.hiphotos.baidu.com/image/pic/item/8ad4b31c8701a18b1efd50a89a2f07082938fec7.jpg"
+	detectInfo, err := cloud.PornDetect(url)
+
+	//多图片Url鉴黄
+	pornUrl := []string{
+		"http://b.hiphotos.baidu.com/image/pic/item/8ad4b31c8701a18b1efd50a89a2f07082938fec7.jpg",
+        "http://c.hiphotos.baidu.com/image/h%3D200/sign=7b991b465eee3d6d3dc680cb73176d41/96dda144ad3459829813ed730bf431adcaef84b1.jpg",
+    }
+	pornUrlRes, err := cloud.PornDetectUrl(pornUrl)
+
+	//多图片文件鉴黄
+	pornFile := []string{
+        "D:/porn/test1.jpg",
+        "D:/porn/test2.jpg",
+        "../../../../../porn/测试.png",
+    }
+	pornFileRes, err := cloud.PornDetectFile(pornFile)
+
 ### demo示例
 请阅读test/demo.go示例
 对于v2版本的图片api，请参考demoV2.go
 	
 版本信息
 ----------------------------------- 
+### v2.0.3
+黄图识别新增多图片Url和多图片内容的支持。
+
 ### v2.0.2
 增加对黄图识别api的支持。
 

@@ -65,6 +65,7 @@ type PornDetectInfo struct {
 	PornScore   float64
 	NormalScore float64
 	HotScore    float64
+	ForbidStatus int
 }
 
 func String2Uint(s string) uint {
@@ -78,7 +79,7 @@ func (ui *UrlInfo) Print() {
 	fmt.Printf("download url = %s\n", ui.DownloadUrl)
 }
 
-func (pi *PicInfo) Version() string {
+func (pc *PicCloud) Version() string {
 	return QCLOUD_VERSION
 }
 
@@ -98,6 +99,7 @@ func (pdi *PornDetectInfo) Print() {
 	fmt.Printf("hot score = %9.6f\n", pdi.HotScore)
 	fmt.Printf("normal score = %9.6f\n", pdi.NormalScore)
 	fmt.Printf("porn score = %9.6f\n", pdi.PornScore)
+	fmt.Printf("forbid status = %d\n", pdi.ForbidStatus)
 }
 
 func (pc *PicCloud) getUrl(userid string, fileid string) string {
@@ -441,11 +443,11 @@ func (pc *PicCloud) SignOnce(fileid string) (string, error) {
 	return sign.AppSignOnceV2(pc.Appid, pc.SecretId, pc.SecretKey, pc.Bucket, fileid)
 }
 
-func (pc *PicCloud) ProcessSign(expire uint, urlstr string) (string, error) {
-	return sign.ProcessSign(pc.Appid, pc.SecretId, pc.SecretKey, pc.Bucket, expire, urlstr)
+func (pc *PicCloud) ProcessSign(expire uint) (string, error) {
+	return sign.ProcessSign(pc.Appid, pc.SecretId, pc.SecretKey, pc.Bucket, expire)
 }
 
-func (pc *PicCloud) ProcessDecode(signstr string) (string, string, error) {
+func (pc *PicCloud) ProcessDecode(signstr string) (string, error) {
 	return sign.ProcessDecode(signstr, pc.Appid, pc.SecretId, pc.SecretKey)
 }
 
@@ -483,6 +485,19 @@ type processData struct {
 	Url    string `json:"url"`
 }
 
+type processUrl struct {
+	Appid  		uint   		`json:"appid"`
+	Bucket 		string 		`json:"bucket"`
+	UrlList    	[]string 	`json:"url_list"`
+}
+
+type fileNotExist struct {
+	Httpcode  	int   		`json:"httpcode"`
+	Code 		int 		`json:"code"`
+	Message 	string 		`json:"message"`
+	Data 		[]string 	`json:"data"`
+}
+
 func (pc *PicCloud) PornDetect(url string) (info PornDetectInfo, err error) {
 	if "" == url {
 		err = errors.New("invalid url")
@@ -492,7 +507,7 @@ func (pc *PicCloud) PornDetect(url string) (info PornDetectInfo, err error) {
 	reqUrl := "http://" + QCLOUD_PROCESS_DOMAIN + "/detection/pornDetect"
 	expire := uint(3600)
 
-	sign, err := pc.ProcessSign(expire, url)
+	sign, err := pc.ProcessSign(expire)
 	if nil != err {
 		return
 	}
@@ -544,5 +559,129 @@ func (pc *PicCloud) PornDetect(url string) (info PornDetectInfo, err error) {
 	info.HotScore, _ = js.Get("data").Get("hot_score").Float64()
 	info.NormalScore, _ = js.Get("data").Get("normal_score").Float64()
 	info.PornScore, _ = js.Get("data").Get("porn_score").Float64()
+	info.ForbidStatus, _ = js.Get("data").Get("forbid_status").Int()
+	return
+}
+
+func (pc *PicCloud) PornDetectUrl(pornUrl []string) (res string, err error) {
+	reqUrl := "http://" + QCLOUD_PROCESS_DOMAIN + "/detection/pornDetect"
+	expire := uint(3600)
+
+	sign, err := pc.ProcessSign(expire)
+	if nil != err {
+		return
+	}
+
+	var reqData processUrl
+	reqData.Appid = pc.Appid
+	reqData.Bucket = pc.Bucket
+	reqData.UrlList = pornUrl
+	d, err := json.Marshal(reqData)
+	if nil != err {
+		return
+	}
+
+	bodyBuf := bytes.NewBuffer([]byte(d))
+	req, err := http.NewRequest("POST", reqUrl, bodyBuf)
+	if nil != err {
+		return
+	}
+	req.Header.Set("HOST", QCLOUD_PROCESS_DOMAIN)
+	req.Header.Set("user-agent", "qcloud-go-sdk")
+	req.Header.Set("Authorization", sign)
+	req.Header.Set("Content-Type", "application/json")
+
+	var client http.Client
+	resp, err := client.Do(req)
+	if nil != err {
+		fmt.Printf("http error, err=%s", err.Error())
+		return
+	}
+	defer resp.Body.Close()
+
+	data, err := ioutil.ReadAll(resp.Body)
+	if nil != err {
+		return
+	}
+
+	res = string(data)
+
+	return
+}
+
+func (pc *PicCloud) PornDetectFile(pornFile []string) (res string, err error) {
+	reqUrl := "http://" + QCLOUD_PROCESS_DOMAIN + "/detection/pornDetect"
+	expire := uint(3600)
+
+	sign, err := pc.ProcessSign(expire)
+	if nil != err {
+		return
+	}
+
+	bodyBuf := &bytes.Buffer{}
+	w := multipart.NewWriter(bodyBuf)
+
+	w.WriteField("appid", strconv.Itoa(int(pc.Appid)))
+	w.WriteField("bucket", pc.Bucket)
+
+    for i := 0; i < len(pornFile); i++ {
+	    _, err1 := os.Open(pornFile[i])
+	    if err1 != nil && os.IsNotExist(err1) {
+			fne := fileNotExist {
+				Httpcode:  	0,
+				Code: 		-1,
+				Message: 	"file "+pornFile[i]+" not exist!",
+			}
+			data, _ := json.Marshal(fne)
+			res = string(data)
+		    return
+	    }
+    	fw, err1 := w.CreateFormFile("image["+strconv.Itoa(i)+"]", pornFile[i])
+	    if nil != err1 {
+			return
+		}
+
+		fd, err1 := os.Open(pornFile[i])
+		if nil != err1 {
+			return
+		}
+		defer fd.Close()
+
+		_, err1 = io.Copy(fw, fd)
+		if nil != err1 {
+			return
+		}		
+    }
+    w.Close()
+
+	req, err := http.NewRequest("POST", reqUrl, bodyBuf)
+	if nil != err {
+		return
+	}
+	req.Header.Set("HOST", QCLOUD_PROCESS_DOMAIN)
+	req.Header.Set("user-agent", "qcloud-go-sdk")
+	req.Header.Set("Authorization", sign)
+	req.Header.Set("Content-Type", w.FormDataContentType())
+
+
+/*	proxyURL, err := url.Parse("http://127.0.0.1:8888")
+	transport := &http.Transport{Proxy: http.ProxyURL(proxyURL)}
+	client := &http.Client{Transport: transport}*/
+
+	var client http.Client
+	resp, err := client.Do(req)
+	if nil != err {
+		fmt.Printf("http error, err=%s", err.Error())
+		return
+	}
+	defer resp.Body.Close()
+
+	data, err := ioutil.ReadAll(resp.Body)
+	if nil != err {
+		return
+	}
+
+	res = string(data)
+
 	return
 }
