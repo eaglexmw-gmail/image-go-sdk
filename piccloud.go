@@ -21,7 +21,7 @@ import (
 	"time"
 
 	"github.com/bitly/go-simplejson"
-	"github.com/tencentyun/go-sdk/sign"
+	"github.com/eaglexmw-gmail/image-go-sdk/sign"
 )
 
 const QCLOUD_VERSION = "2.0.2"
